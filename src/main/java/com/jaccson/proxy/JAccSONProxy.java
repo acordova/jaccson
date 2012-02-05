@@ -1,7 +1,9 @@
+package com.jaccson.proxy;
+
 /**
  * This allows one to use a client in a language that doesn't run on the JVM
  */
-package com.jaccson.proxy;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,36 +14,36 @@ import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.jaccson.JAccSONConnection;
-import com.jaccson.JAccSONCursor;
-import com.jaccson.JAccSONTable;
+import com.jaccson.JaccsonConnection;
+import com.jaccson.JaccsonCursor;
+import com.jaccson.JaccsonTable;
 
-public class JAccSONProxy implements TableCursorService.Iface {
+public class JaccsonProxy implements TableCursorService.Iface {
 
-	private HashMap<String, JAccSONTable> openTables;
-	private HashMap<Integer, JAccSONCursor> openCursors;
-	private JAccSONConnection conn;
+	private HashMap<String, JaccsonTable> openTables;
+	private HashMap<Integer, JaccsonCursor> openCursors;
+	private JaccsonConnection conn;
 	private static final int BATCH_SIZE = 100;
 	private Random random = new Random();
 
-	public JAccSONProxy(String instance, String zkServers, String user, String password, String auths) throws AccumuloException, AccumuloSecurityException {
-		openTables = new HashMap<String, JAccSONTable>();
+	public JaccsonProxy(String zkServers, String instance, String user, String password, String auths) throws AccumuloException, AccumuloSecurityException {
+		openTables = new HashMap<String, JaccsonTable>();
+		openCursors = new HashMap<Integer, JaccsonCursor>();
 
-		conn = new JAccSONConnection(instance, zkServers, user, password, auths);
+		conn = new JaccsonConnection(zkServers, instance, user, password, auths);
 	}
 
 	// cursor methods
-	public List<String> nextBatch(int cursor) throws TException {
+	public List<String> nextBatch(int cursor) throws JaccsonException {
 
-		JAccSONCursor cur = openCursors.get(cursor);
+		JaccsonCursor cur = openCursors.get(cursor);
 		ArrayList<String> batch = new ArrayList<String>();
 
 		while(cur.hasNext() && batch.size() < BATCH_SIZE) {
@@ -56,102 +58,64 @@ public class JAccSONProxy implements TableCursorService.Iface {
 	}
 
 	// table methods
-	public void insert(String table, String json) throws TException {
+	public void insertBatch(String table, List<String> json) throws JaccsonException {
 		try {
-			JAccSONTable t = getTable(table, true);
-			t.insert(json);
+			JaccsonTable t = getTable(table, true);
+			
+			for(String j : json)
+				t.insert(j);
 
-		} catch (TableNotFoundException e) {
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			e.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
+		} 
 	}
 
-	public void update(String table, String query, String mods)
-			throws TException {
+	public void update(String table, String query, String mods) throws JaccsonException {
 		try {
-			JAccSONTable t = getTable(table, true);
+			JaccsonTable t = getTable(table, true);
 			t.update(query, mods);
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
 		}
 	}
 
 	public int find(String table, String query, String select)
-			throws TException {
+			throws JaccsonException {
 
 		try {
-			JAccSONTable t = getTable(table, false);
+			JaccsonTable t = getTable(table, false);
 
-			try {
-				JAccSONCursor cursor = t.find(query, select);
-				// find a random label
-				int label;
-				
-				synchronized(openCursors) {
-					
+
+			JaccsonCursor cursor = t.find(query, select);
+			// find a random label
+			int label;
+
+			synchronized(openCursors) {
+
+				label = random.nextInt();
+
+				while(openCursors.containsKey(label))
 					label = random.nextInt();
-					
-					while(openCursors.containsKey(label))
-						label = random.nextInt();
-					
-					openCursors.put(label, cursor);
-				}
-				
-				return label;
-				
-			} catch (JSONException e) {
-				e.printStackTrace();
+
+				openCursors.put(label, cursor);
 			}
 
-		} catch (TableNotFoundException e) {
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			e.printStackTrace();
-		}
+			return label;
 
-		return -1;
+
+
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
+		}
 	}
 
-	private JAccSONTable getTable(String table, boolean create) throws TableNotFoundException, AccumuloException, AccumuloSecurityException, TableExistsException {
+	private JaccsonTable getTable(String table, boolean create) throws TableNotFoundException, AccumuloException, AccumuloSecurityException, TableExistsException {
 
-		JAccSONTable t = null;
+		JaccsonTable t = null;
 		if(!openTables.containsKey(table)) {
-			try {
-				t = conn.getTable(table);
-			} catch (TableNotFoundException e) {
-				if(create) {
-					conn.createTable(table);
-					t = conn.getTable(table);
-				}
-				else {
-					throw e;
-				}
-			}
+			System.err.println("opening new table " + table);
+			t = conn.getTable(table);
+			openTables.put(table, t);
 		}
 		else {
 			t = openTables.get(table);
@@ -160,185 +124,114 @@ public class JAccSONProxy implements TableCursorService.Iface {
 		return t;
 	}
 
-	public String findOne(String table, String query, String select) throws TException {
+	public String findOne(String table, String query, String select) throws JaccsonException {
 
 		try {
-			JAccSONTable t = getTable(table, false);
+			JaccsonTable t = getTable(table, false);
 			JSONObject o = t.findOne(query, select);
 			if(o != null)
 				return o.toString();
-			
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
 		}
-		
+
 		return null;
 	}
 
-	public String get(String table, String oid) throws TException {
-		
+	public String get(String table, String oid) throws JaccsonException {
+
 		try {
-			JAccSONTable t = getTable(table, false);
+			JaccsonTable t = getTable(table, false);
 			JSONObject o = t.get(oid);
 			if(o != null)
 				return o.toString();
-			
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
 		}
-		
+
 		return null;
 	}
 
-	public void remove(String table, String query) throws TException {
+	public void remove(String table, String query) throws JaccsonException {
 		try {
-			JAccSONTable t = getTable(table, false);
+			JaccsonTable t = getTable(table, false);
 			t.remove(query);
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
 		}
 	}
 
-	public void close(String table) throws TException {
+	public void close(String table) throws JaccsonException {
 
 	}
 
-	public void ensureIndex(String table, String path) throws TException {
+	public void ensureIndex(String table, String path) throws JaccsonException {
 		try {
-			JAccSONTable t = getTable(table, true);
+			JaccsonTable t = getTable(table, true);
 			t.ensureIndex(path);
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
 		}
 
 	}
 
-	public void dropIndex(String table, String path) throws TException {
+	public void dropIndex(String table, String path) throws JaccsonException {
 		try {
-			JAccSONTable t = getTable(table, false);
-			
+			JaccsonTable t = getTable(table, false);
+
 			t.dropIndex(path);
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
 		}
 
 	}
 
-	public void compact(String table) throws TException {
+	public void compact(String table) throws JaccsonException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void drop(String table) throws TException {
+	public void drop(String table) throws JaccsonException {
 		try {
 			conn.dropTable(table);
-		} catch (AccumuloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
 		}
 	}
 
 	@Override
-	public void flush(String table) throws TException {
+	public void flush(String table) throws JaccsonException {
 		try {
-			JAccSONTable t = getTable(table, false);
+			JaccsonTable t = getTable(table, false);
 			t.flush();
-			
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
 		}
 	}
-	
+
 	public static void main(String[] args) {
-		
+
 		try {
-		      JAccSONProxy handler = new JAccSONProxy(args[1], args[2], args[3], args[4], args[5]);
-		      
-		      TableCursorService.Processor processor = new TableCursorService.Processor(handler);
-		      TServerTransport serverTransport = new TServerSocket(Integer.parseInt(args[6]));
-		      TServer server = new TSimpleServer(processor, serverTransport);
+			JaccsonProxy handler = new JaccsonProxy(args[0], args[1], args[2], args[3], args[4]);
 
-		      // Use this for a multithreaded server
-		      //server = new TThreadPoolServer(processor, serverTransport);
+			TableCursorService.Processor processor = new TableCursorService.Processor(handler);
+			TServerTransport serverTransport = new TServerSocket(Integer.parseInt(args[5]));
 
-		      System.out.println("Starting the server...");
-		      server.serve();
+			TServer server = new TSimpleServer(new Args(serverTransport).processor(processor));
 
-		    } catch (Exception x) {
-		      x.printStackTrace();
-		    }
-		    System.out.println("done.");
+			// Use this for a multi threaded server
+			//TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
+
+
+			System.out.println("Starting the server...");
+			server.serve();
+
+		} catch (Exception x) {
+			x.printStackTrace();
+		}
+		System.out.println("done.");
 	}
 }

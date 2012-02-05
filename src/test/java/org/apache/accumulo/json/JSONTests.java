@@ -1,5 +1,7 @@
 package org.apache.accumulo.json;
 
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,4 +54,36 @@ public class JSONTests extends TestCase {
 		}
 		
 	}
+	
+	public void testValuesForPath() {
+		
+		try {
+			JSONObject o = new JSONObject("{memberID: '123', author:{first:'bob', last:'dobbs'}, books:[{title:'subgenius handbook', price:{dollars:400, euros:300}},{title:'slack', price:{dollars:200, euros:180}}]}");
+			
+			// simple, one level
+			assertEquals(JSONHelper.valueForPath("memberID", o).toString(), "123");
+			
+			// simple, two levels
+			assertEquals(JSONHelper.valueForPath("author.last", o).toString(), "dobbs");
+			
+			// multiple, last level
+			Object values = JSONHelper.valueForPath("books.title", o);
+			if(values instanceof List) {
+				for(Object v : (List)values) {
+					System.out.println(v);
+				}
+			}
+			
+			// multiple, mid-level
+			values = JSONHelper.valueForPath("books.price.dollars", o);
+			if(values instanceof List) {
+				for(Object v : (List)values)
+					System.out.println(v);
+			}
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

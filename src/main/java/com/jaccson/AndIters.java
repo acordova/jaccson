@@ -30,6 +30,7 @@ public class AndIters implements Iterator<List<Range>> {
 				break;
 			}
 			
+			// load up first row of each iter
 			rows[i] = iter.next().getKey().getColumnQualifier().toString();
 			i++;
 		}
@@ -48,7 +49,7 @@ public class AndIters implements Iterator<List<Range>> {
 		while(true) {
 			
 			if(i==j) {
-				// advance one iterator to being next round
+				// advance one iterator to begin next round
 				if(iters.get(0).hasNext()) {
 					iters.get(0).next();
 				}

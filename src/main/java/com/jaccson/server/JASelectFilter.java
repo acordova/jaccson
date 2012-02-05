@@ -1,3 +1,4 @@
+/**
 package com.jaccson.server;
 
 
@@ -90,7 +91,7 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 	 * 
 	 * The initial digit is used only to distinguish the different filter classes. Additional options need not be provided, unless expected by the particular
 	 * filter.
-	 */
+	 
 
 	private static Map<String,Map<String,String>> parseOptions(Map<String,String> options) {
 		HashMap<String,String> namesToClasses = new HashMap<String,String>();
@@ -138,7 +139,7 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 	 * (IllegalAccessException e) { throw new IOException("illegal access exception: "+className); } }
 	 * 
 	 * return new IteratorOptions(name, options); }
-	 */
+	 
 
 	//@Override
 	public IteratorOptions describeOptions() {
@@ -154,3 +155,5 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 
 
 }
+
+*/

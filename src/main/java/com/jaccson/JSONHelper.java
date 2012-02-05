@@ -1,14 +1,39 @@
 package com.jaccson;
 
+import java.util.ArrayList;
+import java.util.Map.Entry;
+
+import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Value;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JSONHelper {
 
+	public static JSONObject objectForKeyValue(Entry<Key,Value> pair) {
+		JSONObject o = null;
+		try {
+			o = new JSONObject(new String(pair.getValue().get()));
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		// add key 
+		try {
+			o.put("_id", pair.getKey().getRow().toString());
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		return o;
+	}
+	
 	public static JSONObject innerMostObjectForPath(String path, JSONObject object) throws JSONException {
 
-		String[] steps = path.split(".");
+		String[] steps = path.split("\\.");
 
 		for(int i=0; i < steps.length-1; i++) {
 			String step = steps[i];
@@ -19,6 +44,61 @@ public class JSONHelper {
 		}
 
 		return object;
+	}
+	
+	/**
+	 * throws JSONException if a field is not found
+	 * 
+	 * @param path
+	 * @param object
+	 * @return
+	 * @throws JSONException
+	 */
+	public static Object valueForPath(String path, JSONObject object) throws JSONException {
+		String[] steps = path.split("\\.");
+		
+		ArrayList<Object> results = new ArrayList<Object>();
+		
+		valuesForPath(steps, object, results);
+		
+		if(results.size() == 0)
+			return null;
+					
+		if(results.size() == 1)
+			return results.get(0);
+		
+		return results;
+	}
+	
+	private static void valuesForPath(String[] steps, Object object, ArrayList<Object> results) throws JSONException {
+
+		if(object instanceof JSONObject) {
+			
+			// base case
+			if(steps.length == 1) {
+				results.add(((JSONObject)object).get(steps[0]));
+				return;
+			}
+			
+			String[] remainingSteps = new String[steps.length-1];
+			for(int i=1; i < steps.length; i++)
+				remainingSteps[i-1] = steps[i];
+			
+			valuesForPath(remainingSteps, ((JSONObject) object).get(steps[0]), results);
+		}
+		else {
+		
+			JSONArray ia = (JSONArray)object;
+			
+			for(int i=0; i < ia.length(); i++) {
+				try {
+					valuesForPath(steps, ia.get(i), results);
+				}
+				catch(JSONException e) {
+					
+				}
+			}	
+		}
 	}
 
 	public static String fieldFromPath(String path) {

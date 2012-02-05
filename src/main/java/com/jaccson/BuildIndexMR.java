@@ -16,9 +16,12 @@ import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.json.JSONArray;
@@ -105,7 +108,7 @@ public class BuildIndexMR implements Tool {
 			Instance inst = new ZooKeeperInstance(conf.get("acc.instance"), conf.get("acc.zkservers"));
 			try {
 				Connector conn = inst.getConnector(conf.get("acc.username"), conf.get("acc.password").getBytes());
-				indexWriter = conn.createBatchWriter(tableName, 1000000L, 1000L, 10);
+				indexWriter = conn.createBatchWriter(tableName + "_" + indexField.replace(',', '_'), 1000000L, 1000L, 10);
 			} catch (AccumuloException e) {
 
 				e.printStackTrace();
@@ -134,6 +137,14 @@ public class BuildIndexMR implements Tool {
 				e.printStackTrace();
 			}
 		}
+		
+		public void cleanup(Context context) {
+			try {
+				indexWriter.close();
+			} catch (MutationsRejectedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private Configuration conf = null;
@@ -150,10 +161,11 @@ public class BuildIndexMR implements Tool {
 		this.conf = conf;
 	}
 
+	@SuppressWarnings("deprecation")
 	public int run(String[] args) throws Exception {
 		
 		Job job = new Job(getConf());
-
+		
 		job.setJarByClass(BuildIndexMR.class);
 		job.setMapperClass(BuildIndexMR.BIMapper.class);
 		job.setNumReduceTasks(0);
@@ -161,6 +173,10 @@ public class BuildIndexMR implements Tool {
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(Text.class);
 		
+		Path outputPath = new Path("/tmp/build_index_" + args[6]);
+		FileSystem.get(conf).delete(outputPath, true);
+		
+		FileOutputFormat.setOutputPath(job, outputPath);
 		
 		// configure input parameters
 		job.setInputFormatClass(AccumuloInputFormat.class);
@@ -168,7 +184,7 @@ public class BuildIndexMR implements Tool {
 		AccumuloInputFormat.setZooKeeperInstance(job, args[1], args[2]);
 		AccumuloInputFormat.setInputInfo(job, args[3], args[4].getBytes(), args[5], new Authorizations());
 		
-		Configuration conf = getConf();
+		Configuration conf = job.getConfiguration();
 		conf.set("acc.instance", args[1]);
 		conf.set("acc.zkservers", args[2]);
 		conf.set("acc.username", args[3]);
@@ -177,8 +193,9 @@ public class BuildIndexMR implements Tool {
 		conf.set("acc.index_field", args[6]);
 		
 		// run
-		job.waitForCompletion(false);
+		job.waitForCompletion(args[7].equals("block"));
 		
+		FileSystem.get(conf).delete(outputPath, true);
 		
 		return 0;
 	}

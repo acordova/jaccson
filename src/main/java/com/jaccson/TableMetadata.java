@@ -20,25 +20,26 @@ import org.apache.accumulo.core.security.Authorizations;
 
 public class TableMetadata {
 	
+	private final String JACCSON_MD_TABLE = "jaccson_metadata";
+	
 	private BatchWriter writer;
 	private Scanner scanner;
 
 	public TableMetadata(Connector conn, Authorizations auths) throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
 			
 		try {
-			writer = conn.createBatchWriter("acc_json_metadata", 1000000L, 1000L, 10);
-			scanner = conn.createScanner("acc_json_metadata", auths);	
+			writer = conn.createBatchWriter(JACCSON_MD_TABLE, 1000000L, 1000L, 10);
+			scanner = conn.createScanner(JACCSON_MD_TABLE, auths);	
 			
 		} catch (TableNotFoundException e) {
 			try {
-				conn.tableOperations().create("acc_json_metadata");
+				conn.tableOperations().create(JACCSON_MD_TABLE);
 			} catch (TableExistsException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			
-			writer = conn.createBatchWriter("acc_json_metadata", 1000000L, 1000L, 10);
-			scanner = conn.createScanner("acc_json_metadtata", auths);	
+			writer = conn.createBatchWriter(JACCSON_MD_TABLE, 1000000L, 1000L, 10);
+			scanner = conn.createScanner(JACCSON_MD_TABLE, auths);	
 		}
 	}
 	
@@ -65,7 +66,7 @@ public class TableMetadata {
 	public void removeIndexKey(String tableName, String key) throws MutationsRejectedException {
 		
 		Mutation m = new Mutation(tableName);
-		m.putDelete("index_keys", key);
+		m.putDelete("indexed_keys", key);
 		writer.addMutation(m);
 		writer.flush();
 	}

@@ -17,8 +17,8 @@ import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
-import com.jaccson.JAccSONConnection;
-import com.jaccson.JAccSONTable;
+import com.jaccson.JaccsonConnection;
+import com.jaccson.JaccsonTable;
 
 /**
  * <p>This is a code example of Twitter4J Streaming API - sample method support.<br>
@@ -35,10 +35,10 @@ public class TwitterTest {
 	public static class TWriter implements StatusListener {
 
 
-		private JAccSONTable table;
+		private JaccsonTable table;
 		private int numTweets = 0;
 		
-		public TWriter(JAccSONTable t) throws AccumuloException, AccumuloSecurityException, TableNotFoundException, TableExistsException {
+		public TWriter(JaccsonTable t) throws AccumuloException, AccumuloSecurityException, TableNotFoundException, TableExistsException {
 			table = t;
 		}
 
@@ -104,17 +104,9 @@ public class TwitterTest {
 	 */
 	public static void main(String[] args) throws TwitterException, AccumuloException, AccumuloSecurityException, TableExistsException, TableNotFoundException, JSONException {
 
-		JAccSONConnection conn = new JAccSONConnection("new-host.home:2181", "test", "root", "secret", null);
+		JaccsonConnection conn = new JaccsonConnection("new-host.home:2181", "test", "root", "secret", null);
 
-		JAccSONTable table = null;
-		try {
-			table = conn.getTable("tweets");
-		} 
-		catch (TableNotFoundException e) {
-			conn.createTable("tweets");
-			table = conn.getTable("tweets");
-		}
-		
+		JaccsonTable table = conn.getTable("tweets");
 		
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		

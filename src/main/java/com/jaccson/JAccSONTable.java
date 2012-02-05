@@ -37,42 +37,67 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class JAccSONTable {
+public class JaccsonTable {
 
 	protected String tableName;
-	private BatchWriter writer;
+	private BatchWriter writer = null;
 	protected Authorizations auths; 
 	protected Connector conn;
 	private Scanner simpleGetter;
 	private Set<String> indexedKeys;
 	private TableMetadata metadata;
-
+	private String username;
+	private String password;
+	private boolean dirty;
+	
 	private HashMap<String,BatchWriter> indexWriters;
 
 	private static final Value BLANK_VALUE = new Value("".getBytes());
 
-	public JAccSONTable(String table, Connector conn, Authorizations auths) throws TableNotFoundException, AccumuloException, AccumuloSecurityException {
+	private void getWritersReaders() throws TableNotFoundException {
+
+		if(writer != null)
+			return;
+		
+		if(!conn.tableOperations().exists(tableName)) {
+			try {
+				conn.tableOperations().create(tableName);
+				
+				// TODO: need to throw any of these?
+			} catch (AccumuloException e) {
+				e.printStackTrace();
+			} catch (AccumuloSecurityException e) {
+				e.printStackTrace();
+			} catch (TableExistsException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		writer = conn.createBatchWriter(tableName, 1000000L, 1000L, 10);
+		indexWriters = new HashMap<String,BatchWriter>();
+		simpleGetter = conn.createScanner(tableName, auths);
+		simpleGetter.setBatchSize(1);
+	}
+	
+	public JaccsonTable(String table, Connector conn, Authorizations auths, String username, String password) throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
 
 		this.tableName = table;
-
-		writer = conn.createBatchWriter(table, 1000000L, 1000L, 10);
-
-		indexWriters = new HashMap<String,BatchWriter>();
-		simpleGetter = conn.createScanner(table, auths);
-		simpleGetter.setBatchSize(1);
 
 		metadata = new TableMetadata(conn, auths);
 
 		indexedKeys = metadata.getIndexedKeys(tableName); 
-
+		dirty = false;
+		
 		this.auths = auths;
 		this.conn = conn;
+		this.username = username;
+		this.password = password;
 	}
 
 	private BatchWriter writerForIndexKey(String key) throws TableNotFoundException {
 
 		if(!indexWriters.containsKey(key)) {
-			indexWriters.put(key, conn.createBatchWriter(tableName + "_" + key.replace(',', '_'), 1000000L, 1000L, 10));
+			indexWriters.put(key, conn.createBatchWriter(tableNameForIndex(key), 1000000L, 1000L, 10));
 		}
 
 		return indexWriters.get(key);
@@ -140,9 +165,15 @@ public class JAccSONTable {
 		}
 	}
 
+	private String tableNameForIndex(String path) {
+		return tableName + "_" + path.replace(',', '_');	
+	}
+
 
 	public String insert(String json) throws JSONException, MutationsRejectedException, TableNotFoundException {
 
+		getWritersReaders();
+		
 		JSONObject obj = new JSONObject(json);
 
 		String rowid = null;
@@ -164,6 +195,8 @@ public class JAccSONTable {
 		if(indexedKeys.size() > 0)
 			indexJSON(obj, "", rowid);
 
+		dirty = true;
+		
 		// TODO: update count
 
 		return rowid;	
@@ -177,17 +210,20 @@ public class JAccSONTable {
 	public int update(String query, String mods, boolean upsert) throws JSONException, TableNotFoundException, MutationsRejectedException {
 		return update(query, mods, upsert, false);
 	}
-	
+
 	// TODO: remove multi? default to multi=true?
 	public int update(String query, String mods, boolean upsert, boolean multi) throws JSONException, TableNotFoundException, MutationsRejectedException {
+		
+		getWritersReaders();
+		
 		// parse mods
 		JSONObject modsj = new JSONObject(mods);
 
-		JAccSONCursor cur = find(query, "");
+		JaccsonCursor cur = find(query, "");
 		boolean found = false;
 		for(JSONObject o : cur) {
 			found = true;
-			
+
 			Mutation m = new Mutation(o.getString("_id"));
 			@SuppressWarnings("rawtypes")
 			Iterator keyIter = modsj.keys();
@@ -195,36 +231,48 @@ public class JAccSONTable {
 				JSONObject mod = modsj.getJSONObject((String) keyIter.next());
 				m.put("JSON", "", new Value(mod.toString().getBytes()));
 			}
-			
+
 			if(!multi)
 				break;
 		}
-		
+
 		if(!found && upsert) {
 			// TODO: check that there are no operators
 			insert(mods);
 		}
+
+		dirty = true;
 		
 		return 0;
 	}
 
-	public boolean remove(String query) {
+	public boolean remove(String query) throws TableNotFoundException {
 
-		// look in the index for items matching the query
+		getWritersReaders();
 		
+		// look in the index for items matching the query
+
 		// remove each from index
 		// then main table
+		dirty = true;
 		return false;
 	}
 
-	public JAccSONCursor find(String query, String select) throws TableNotFoundException, JSONException {
+	public JaccsonCursor find(String query, String select) throws TableNotFoundException, JSONException {
 
-		return new JAccSONCursor(this, query, select);
+		// provides consistency from this client's point of view
+		if(dirty)
+			flush();
+		
+		return new JaccsonCursor(this, query, select);
 	}
 
 	public JSONObject findOne(String query, String select) throws TableNotFoundException, JSONException {
 
-		JAccSONCursor cursor = new JAccSONCursor(this, query, select);
+		if(dirty)
+			flush();
+		
+		JaccsonCursor cursor = new JaccsonCursor(this, query, select);
 
 		if(!cursor.hasNext())
 			return null;
@@ -234,6 +282,9 @@ public class JAccSONTable {
 
 	public JSONObject get(String rowid) throws JSONException {
 
+		if(dirty)
+			flush();
+		
 		simpleGetter.setRange(new Range(rowid));
 
 		Iterator<Entry<Key, Value>> iter = simpleGetter.iterator();
@@ -259,28 +310,37 @@ public class JAccSONTable {
 		}	
 	}
 
-	public void ensureIndex(String key) throws AccumuloException, AccumuloSecurityException, TableExistsException {
+	public void ensureIndex(String key) throws AccumuloException, AccumuloSecurityException, TableExistsException, TableNotFoundException {
+		ensureIndex(key, false);
+	}
+	
+	public void ensureIndex(String key, boolean block) throws AccumuloException, AccumuloSecurityException, TableExistsException, TableNotFoundException {
 
+		if(dirty)
+			flush();
+		
 		// check that index doesn't already exist
 		if(metadata.getIndexedKeys(tableName).contains(key)) 
 			return;
-
-
+		
+		getWritersReaders();
+		
+		conn.tableOperations().create(tableNameForIndex(key));
+		
 		// TODO: communicate new index key to other clients via zookeeper
 		metadata.setIndexKey(tableName, key);
 		indexedKeys.add(key);
-
-		conn.tableOperations().create(tableName + "_" + key.replace('.', '_'));
-
+		
 		// start indexing existing keys via MR
 		String[] args = {
 				"command",
-				conn.getInstance().getInstanceName(),
+				conn.getInstance().getInstanceName().toString(),
 				conn.getInstance().getZooKeepers(),
-				"username",
-				"password",
+				username,
+				password,
 				tableName,
-				key
+				key,
+				block ? "block" : "noblock"
 		};
 
 		try {
@@ -290,11 +350,16 @@ public class JAccSONTable {
 		}
 	}
 
-	public void dropIndex(String key) throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
+	public void dropIndex(String key) throws AccumuloException, AccumuloSecurityException {
 		metadata.removeIndexKey(tableName, key);
 
 		// drop index table
-		conn.tableOperations().delete(tableName + "_" + key.replace('.', '_'));
+		try {
+			conn.tableOperations().delete(tableName + "_" + key.replace('.', '_'));
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public void compact() {
@@ -302,13 +367,17 @@ public class JAccSONTable {
 
 	}
 
-	public void drop() throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
+	public void drop() throws AccumuloException, AccumuloSecurityException {
 
 		for(String indexedKey : indexedKeys) {
 			dropIndex(indexedKey);
 		}
 
-		conn.tableOperations().delete(tableName);
+		try {
+			conn.tableOperations().delete(tableName);
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected BatchScanner batchScanner() throws TableNotFoundException {
@@ -316,8 +385,12 @@ public class JAccSONTable {
 		return conn.createBatchScanner(tableName, auths, 10);
 	}
 
-	protected Scanner indexScannerForKey(String key) throws TableNotFoundException {
-		return conn.createScanner(tableName + "_" + key.replace('.', '_'), auths);
+	protected Scanner indexScannerForKey(String key) {
+		try {
+			return conn.createScanner(tableNameForIndex(key), auths);
+		} catch (TableNotFoundException e) {
+			return null;
+		}
 	}
 
 
@@ -338,9 +411,33 @@ public class JAccSONTable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		dirty = false;
 	}
 
 	public BatchScanner batchScannerForKey(String field) throws TableNotFoundException {
-		return conn.createBatchScanner(tableName + "_" + field.replace('.', '_'), auths, 10);
+		return conn.createBatchScanner(tableNameForIndex(field), auths, 10);
+	}
+
+	public static void main(String[] args) throws AccumuloException, AccumuloSecurityException, 
+		TableNotFoundException, TableExistsException, JSONException {
+		
+		JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
+
+		JaccsonTable table = conn.getTable("indexEmptyTestTable");
+		table.ensureIndex("field");
+
+		table.insert("{field:'aaa', amount:2}");
+		table.insert("{field:'bbb', amount:2}");
+		table.insert("{field:'ccc', amount:2}");
+		table.insert("{field:'ddd', amount:2}");
+		table.insert("{field:'eee', amount:2}");
+		table.insert("{field:'fff', amount:2}");
+		table.insert("{field:'ggg', amount:2}");
+	}
+
+	public boolean isIndexed(String name) {
+		
+		return indexedKeys.contains(name);
 	}
 }
