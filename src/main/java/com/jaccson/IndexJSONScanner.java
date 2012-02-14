@@ -25,11 +25,11 @@ import org.json.JSONObject;
 public class IndexJSONScanner implements Iterator<Entry<Key,Value>> {
 
 	private BatchScanner bscan;
-	private JAccSONTable table;
+	private JaccsonTable table;
 	private Iterator<Entry<Key,Value>> currentIter = null;
 	private Iterator<List<Range>> indexesIter; 
 	
-	public IndexJSONScanner(JSONObject query, JAccSONTable table) throws TableNotFoundException, JSONException {
+	public IndexJSONScanner(JSONObject query, JaccsonTable table) throws TableNotFoundException, JSONException {
 		
 		this.table = table;
 		this.bscan = table.batchScanner();
