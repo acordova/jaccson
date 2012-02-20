@@ -22,13 +22,14 @@ public class JaccsonUpdater extends Combiner {
 		$rename, $bit
 	}
 
-
+	// TODO: raise an error if an array is not found
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static void pullAll(JSONObject object, JSONObject finalObj) {
+	public static void pullAll(JSONObject object, JSONObject finalObj) {
+		
 		if(finalObj == null) {
 			return;
 		}
-		
+
 		String path = (String) object.keys().next();
 
 		try {
@@ -45,7 +46,7 @@ public class JaccsonUpdater extends Combiner {
 			JSONArray newArray = new JSONArray();
 
 			// filter out values to pull from array
-			for(int i=0; i < existingArray.length() -1; i++) {
+			for(int i=0; i < existingArray.length(); i++) {
 				Object value = existingArray.get(i);
 				if(valuesToPull.contains(value))
 					continue;
@@ -62,11 +63,14 @@ public class JaccsonUpdater extends Combiner {
 
 	}
 
-	private static void pull(JSONObject object, JSONObject finalObj) {
+	// TODO: raise an error if an array is not found
+	// note: integer 1 and float 1.0 don't compare as equal ...
+	public static void pull(JSONObject object, JSONObject finalObj) {
+
 		if(finalObj == null) {
 			return;
 		}
-		
+
 		String path = (String) object.keys().next();
 
 		try {
@@ -79,16 +83,11 @@ public class JaccsonUpdater extends Combiner {
 			JSONArray newArray = new JSONArray();
 
 			// filter out values to pull from array
-			for(int i=0; i < existingArray.length() -1; i++) {
+			for(int i=0; i < existingArray.length(); i++) {
 				Object value = existingArray.get(i);
-				if(value instanceof String) {
-					if(value.equals(valueToPull))
-						continue;
-				}
-				else {
-					if(value == valueToPull)
-						continue;
-				}
+
+				if(value.equals(valueToPull))
+					continue;		
 
 				newArray.put(value);
 			}
@@ -102,7 +101,10 @@ public class JaccsonUpdater extends Combiner {
 
 	}
 
-	private static void pop(JSONObject object, JSONObject finalObj) {
+	// TODO: raise an error if an array is not found
+	// TODO: support popping first element using -1
+	public static void pop(JSONObject object, JSONObject finalObj) {
+		
 		if(finalObj == null) {
 			return;
 		}
@@ -115,7 +117,9 @@ public class JaccsonUpdater extends Combiner {
 
 			JSONArray existingArray = o.getJSONArray(field);
 			JSONArray newArray = new JSONArray();
-			for(int i=0; i < existingArray.length() -1; i++) {
+
+			// leave out the last
+			for(int i=0; i < existingArray.length()-1; i++) {
 				Object value = existingArray.get(i);
 				newArray.put(value);
 			}
@@ -129,13 +133,47 @@ public class JaccsonUpdater extends Combiner {
 
 	}
 
-	private static JSONObject addToSet(JSONObject object, JSONObject finalObj) {
-		// TODO Auto-generated method stub
-		return null;
+	// TODO: raise an error if an array is not found
+	// TODO: add $each support
+	public static JSONObject addToSet(JSONObject object, JSONObject finalObj) {
+		
+		if(finalObj == null) {
+			return object;
+		}
 
+		String path = (String) object.keys().next();
+
+		try {
+			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
+			String field = JSONHelper.fieldFromPath(path);
+
+			JSONArray objectsToAdd = object.getJSONArray(path);
+			JSONArray existingArray = o.getJSONArray(field);
+			JSONArray newArray = new JSONArray();
+
+			HashSet<Object> values = new HashSet<Object>();
+			for(int i=0; i < existingArray.length(); i++)
+				values.add(existingArray.get(i));
+
+			for(int i=0; i < objectsToAdd.length(); i++) 
+				values.add(objectsToAdd.get(i));
+
+			for(Object value : values)
+				newArray.put(value);
+
+			finalObj.remove(field);
+			finalObj.put(field, newArray);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return finalObj;
 	}
 
-	private static JSONObject pushAll(JSONObject object, JSONObject finalObj) {
+	// TODO: raise an error if an array is not found
+	public static JSONObject pushAll(JSONObject object, JSONObject finalObj) {
+		
 		if(finalObj == null) {
 			return object;
 		}
@@ -158,11 +196,12 @@ public class JaccsonUpdater extends Combiner {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 		return finalObj;
 	}
 
-	private static JSONObject push(JSONObject object, JSONObject finalObj) {
+	public static JSONObject push(JSONObject object, JSONObject finalObj) {
+		
 		if(finalObj == null) {
 			return object;
 		}
@@ -174,18 +213,19 @@ public class JaccsonUpdater extends Combiner {
 			String field = JSONHelper.fieldFromPath(path);
 
 			JSONArray existingArray = o.getJSONArray(field);
-			Object value = object.getJSONArray(path);
+			Object value = object.get(path);
 
 			existingArray.put(value);
 
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 		return finalObj;
 	}
 
-	private static void unset(JSONObject object, JSONObject finalObj) {
+	public static void unset(JSONObject object, JSONObject finalObj) {
+		
 		if(finalObj == null) {
 			return;
 		}
@@ -203,7 +243,8 @@ public class JaccsonUpdater extends Combiner {
 		}
 	}
 
-	private static JSONObject set(JSONObject object, JSONObject finalObj) {
+	public static JSONObject set(JSONObject object, JSONObject finalObj) {
+		
 		if(finalObj == null) {
 			return object;
 		}
@@ -219,11 +260,11 @@ public class JaccsonUpdater extends Combiner {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 		return finalObj;
 	}
 
-	private static JSONObject increment(JSONObject object, JSONObject finalObj) {
+	public static JSONObject increment(JSONObject object, JSONObject finalObj) {
 
 		if(finalObj == null) {
 			return object;
@@ -244,12 +285,75 @@ public class JaccsonUpdater extends Combiner {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 		return finalObj;
 	}
 
 
+	public static JSONObject applyUpdate(JSONObject update, JSONObject finalObj) throws JSONException {
 
+		@SuppressWarnings("rawtypes")
+		Iterator keyIter = update.keys();
+		while(keyIter.hasNext()) {
+
+			String op = keyIter.next().toString();
+
+			// updates should contain at least one update operator ...		
+			switch(operator.valueOf(op)) {
+			case $inc: { 
+				finalObj = increment((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $set: {
+				finalObj = set((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $unset: {
+				unset((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $push: {
+				finalObj = push((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $pushAll: {
+				finalObj = pushAll((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $addToSet: {
+				finalObj = addToSet((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $pop: {
+				pop((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $pull: {
+				pull((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $pullAll: {
+				pullAll((JSONObject)update.get(op), finalObj);
+				break;
+			}
+			case $rename: {
+				//finalObj = rename((JSONObject)next.get(fieldName), finalObj);
+				break;
+			}
+			case $bit: {
+				//bit((JSONObject)next.get(fieldName), finalObj);
+				break;
+			}
+			// basic insert / overwrite
+			default: {
+				finalObj = update;
+				break;
+			}
+			}
+		}
+
+		return finalObj;
+	}
 
 	@Override
 	public Value reduce(Key key, Iterator<Value> iter) {
@@ -264,73 +368,19 @@ public class JaccsonUpdater extends Combiner {
 
 				JSONObject next = new JSONObject(new String(iter.next().get()));
 
-				@SuppressWarnings("rawtypes")
-				Iterator keyIter = next.keys();
-				while(keyIter.hasNext()) {
+				finalObj = applyUpdate(next, finalObj);
 
-					String fieldName = keyIter.next().toString();
-
-
-					// updates should contain at least one update operator ...		
-					switch(operator.valueOf(fieldName)) {
-					case $inc: { 
-						finalObj = increment((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $set: {
-						finalObj = set((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $unset: {
-						unset((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $push: {
-						finalObj = push((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $pushAll: {
-						finalObj = pushAll((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $addToSet: {
-						finalObj = addToSet((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $pop: {
-						pop((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $pull: {
-						pull((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $pullAll: {
-						pullAll((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $rename: {
-						//finalObj = rename((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					case $bit: {
-						//bit((JSONObject)next.get(fieldName), finalObj);
-						break;
-					}
-					// basic insert / overwrite
-					default: {
-						finalObj = next;
-						break;
-					}
-					}
-
-				}
 			}
 			catch(JSONException je) {
-				// should not happen, client should disallow invalid json
+				// can happen if an array is not found, for example ...
+			}
+			catch (IllegalArgumentException iae) {
+				// TODO: handle this
 			}
 		}
 
 		return new Value(finalObj.toString().getBytes());
 	}
 }
+
+
