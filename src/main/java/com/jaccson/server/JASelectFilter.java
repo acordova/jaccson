@@ -1,4 +1,4 @@
-/**
+
 package com.jaccson.server;
 
 
@@ -27,13 +27,6 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 
 	//private static final Logger log = Logger.getLogger(IteratorUtil.class);
 
-	public JASelectFilter deepCopy(IteratorEnvironment env) {
-		return new JASelectFilter(this, env);
-	}
-
-	private JASelectFilter(JASelectFilter other, IteratorEnvironment env) {
-		setSource(other.getSource().deepCopy(env));
-	}
 
 	public JASelectFilter() {}
 
@@ -42,17 +35,11 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 
 	}
 
-	@Override
-	public void next() throws IOException {
-		getSource().next();
-		
-		SortedKeyValueIterator<Key, Value> x = getSource();
-		x.getTopKey();
-	}
 
 	public Value getTopValue() {
 		
-		Value v = getSource().getTopValue();
+		Value v = super.getTopValue();
+		
 		JSONObject selected = new JSONObject();
 		
 		try {
@@ -61,13 +48,10 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 			// perform select
 			for(String name : JSONObject.getNames(vo)) {
 				// pull out a subdoc
-				JSONObject o = JSONHelper.subObjectForPath(name, vo);
-				
-				// every subdoc has one top-level field by definition
-				String field = (String) o.keys().next();
+				Object o = JSONHelper.subObjectForPath(name, vo);
 				
 				// merge subdocs into one doc
-				selected.put(field, o.get(field));
+				selected.put(name, );
 			}
 			
 		} catch (JSONException e) {
@@ -77,22 +61,8 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 		return new Value(selected.toString().getBytes());
 	}
 	
-	@Override
-	public void init(SortedKeyValueIterator<Key,Value> source, Map<String,String> options, IteratorEnvironment env) throws IOException {
-		super.init(source, options, env);
 
-		//Map<String,Map<String,String>> classesToOptions = parseOptions(options);	
-	}
-
-	/*
-	 * FilteringIterator expects its options in the following form:
-	 * 
-	 * key value 0 classNameA 0.optname1 optvalue1 0.optname2 optvalue2 1 classNameB 1.optname3 optvalue3
-	 * 
-	 * The initial digit is used only to distinguish the different filter classes. Additional options need not be provided, unless expected by the particular
-	 * filter.
 	 
-
 	private static Map<String,Map<String,String>> parseOptions(Map<String,String> options) {
 		HashMap<String,String> namesToClasses = new HashMap<String,String>();
 		HashMap<String,Map<String,String>> namesToOptions = new HashMap<String,Map<String,String>>();
@@ -138,7 +108,8 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 	 * IOException("class not found: "+className); } catch (InstantiationException e) { throw new IOException("instantiation exception: "+className); } catch
 	 * (IllegalAccessException e) { throw new IOException("illegal access exception: "+className); } }
 	 * 
-	 * return new IteratorOptions(name, options); }
+	 * return new IteratorOptions(name, options); } 
+	 */ 
 	 
 
 	//@Override
@@ -156,4 +127,3 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 
 }
 
-*/
