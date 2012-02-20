@@ -12,18 +12,17 @@ public class JaccsonCursor implements Iterable<JSONObject>, Iterator<JSONObject>
 	
 	private Iterator<JSONObject> mainIterator;
 	
-	public JaccsonCursor(JaccsonTable table, String query, String select) throws TableNotFoundException, JSONException {
+	public JaccsonCursor(JaccsonTable table, JSONObject query, JSONObject select) throws TableNotFoundException, JSONException {
 
 		// if query is {}, then create basic scanner
-		if(query == null || query.equals("{}")) {
+		if(query == null || query.length() == 0) {
 			Scanner scanner = table.conn.createScanner(table.tableName, table.auths);
 			mainIterator = new UnfilteredJSONIterator(scanner.iterator());
 		}
 		else {
 			// JSON query is a simple set of expressions ANDed
-			JSONObject q = new JSONObject(query);
 			
-			IndexScanner ijs = new IndexScanner(q, table);
+			IndexScanner ijs = new IndexScanner(query, table);
 			
 			JSONObject uic = ijs.getUnindexedClauses();
 			if(uic == null) { // all clauses use an index

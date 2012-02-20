@@ -1,4 +1,4 @@
-Jaccson is a JSON interface for Accumulo. It allows users to insert JSON documents, update JSON documents, index specific values, and query collections using various operators.
+Jaccson is a JSON interface for Accumulo. It allows users to insert JSON documents, update JSON documents, index specific fields, and query collections using various operators.
 
 The design is intended to be similar to MongoDB's API. The advantage to using Jaccson over MongoDB is that Accumulo offers simpler administration of large 'sharded' instances, compatibility with Hadoop, better concurrency (no global write lock), and different performance characteristics.
 

@@ -31,6 +31,7 @@ public class JSONHelper {
 		return o;
 	}
 	
+	// TODO: does this need to handle arrays ? 
 	public static JSONObject innerMostObjectForPath(String path, JSONObject object) throws JSONException {
 
 		String[] steps = path.split("\\.");
@@ -44,10 +45,12 @@ public class JSONHelper {
 		}
 
 		return object;
-	}
+	} 
 	
 	/**
 	 * throws JSONException if a field is not found
+	 * 
+	 * 	this is used for matching docs on non-indexed fields
 	 * 
 	 * @param path
 	 * @param object
@@ -102,7 +105,7 @@ public class JSONHelper {
 	}
 
 	public static String fieldFromPath(String path) {
-		String[] steps = path.split(".");
+		String[] steps = path.split("\\.");
 		String field = steps[steps.length-1];
 		return field;
 	}
@@ -131,7 +134,7 @@ public class JSONHelper {
 			String[] steps = path.split("\\.");
 
 			try {
-				if(steps.length == 1) {
+				if(steps.length == 1) { // base case
 					JSONObject jo = (JSONObject)o;
 					if(!jo.has(steps[0]))
 						return sub;

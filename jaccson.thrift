@@ -6,28 +6,28 @@ exception JaccsonException {
 
 service TableCursorService {
 
-	void insert(1:string table, 2:string json),
+	void insertBatch(1:string table, 2:list<string> json) throws (1:JaccsonException e),
 	
-	void update(1:string table, 2:string query, 3:string mods),
+	void update(1:string table, 2:string query, 3:string mods) throws (1:JaccsonException e),
 	
-	i32 find(1:string table, 2:string query, 3:string select),
+	i32 find(1:string table, 2:string query, 3:string select) throws (1:JaccsonException e),
 	
-	string findOne(1:string table, 2:string query, 3:string select),
+	string findOne(1:string table, 2:string query, 3:string select) throws (1:JaccsonException e),
 	
-	string get(1:string table, 2:string oid),
+	string get(1:string table, 2:string oid) throws (1:JaccsonException e),
 	
-	void remove(1:string table, 2:string query),
+	void remove(1:string table, 2:string query) throws (1:JaccsonException e),
 	
-	void flush(1:string table),
+	void flush(1:string table) throws (1:JaccsonException e),
 	
-	void ensureIndex(1:string table, 2:string path),
+	void ensureIndex(1:string table, 2:string path) throws (1:JaccsonException e),
 	
-	void dropIndex(1:string table, 2:string path),
+	void dropIndex(1:string table, 2:string path) throws (1:JaccsonException e),
 	
-	void compact(1:string table),
+	void compact(1:string table) throws (1:JaccsonException e),
 	
-	void drop(1:string table),
+	void drop(1:string table) throws (1:JaccsonException e),
 	
-	list<string> nextBatch(1:i32 cursor)
+	list<string> nextBatch(1:i32 cursor) throws (1:JaccsonException e)
 	
 }

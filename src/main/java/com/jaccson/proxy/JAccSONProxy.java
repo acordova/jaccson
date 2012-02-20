@@ -39,7 +39,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 
 		conn = new JaccsonConnection(zkServers, instance, user, password, auths);
 	}
-
+	
 	// cursor methods
 	public List<String> nextBatch(int cursor) throws JaccsonException {
 
@@ -63,7 +63,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 			JaccsonTable t = getTable(table, true);
 			
 			for(String j : json)
-				t.insert(j);
+				t.insert(new JSONObject(j));
 
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
@@ -73,7 +73,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 	public void update(String table, String query, String mods) throws JaccsonException {
 		try {
 			JaccsonTable t = getTable(table, true);
-			t.update(query, mods);
+			t.update(new JSONObject(query), new JSONObject(mods));
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		}
@@ -86,7 +86,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 			JaccsonTable t = getTable(table, false);
 
 
-			JaccsonCursor cursor = t.find(query, select);
+			JaccsonCursor cursor = t.find(new JSONObject(query), new JSONObject(select));
 			// find a random label
 			int label;
 
@@ -128,7 +128,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 
 		try {
 			JaccsonTable t = getTable(table, false);
-			JSONObject o = t.findOne(query, select);
+			JSONObject o = t.findOne(new JSONObject(query), new JSONObject(select));
 			if(o != null)
 				return o.toString();
 
@@ -157,7 +157,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 	public void remove(String table, String query) throws JaccsonException {
 		try {
 			JaccsonTable t = getTable(table, false);
-			t.remove(query);
+			t.remove(new JSONObject(query));
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		}
@@ -206,11 +206,13 @@ public class JaccsonProxy implements TableCursorService.Iface {
 		try {
 			JaccsonTable t = getTable(table, false);
 			t.flush();
+			openTables.remove(table);
 
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		}
 	}
+	
 
 	public static void main(String[] args) {
 

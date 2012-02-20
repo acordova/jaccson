@@ -26,13 +26,18 @@ import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
+
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
+
 import org.apache.accumulo.core.security.Authorizations;
+import org.apache.accumulo.core.security.ColumnVisibility;
+
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ToolRunner;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -103,7 +108,7 @@ public class JaccsonTable {
 		return indexWriters.get(key);
 	}
 
-	private void indexJSON(Object obj, String prefix, String rowid) throws JSONException, MutationsRejectedException, TableNotFoundException {
+	private void indexJSON(Object obj, String prefix, String rowid, ColumnVisibility cv) throws JSONException, MutationsRejectedException, TableNotFoundException {
 
 		if(obj instanceof JSONObject) {
 
@@ -112,7 +117,7 @@ public class JaccsonTable {
 			for(String name : JSONObject.getNames(jobj)) {
 				Object o = jobj.get(name);
 
-				indexJSON(o, prefix + name + ".", rowid);
+				indexJSON(o, prefix + name + ".", rowid, cv);
 			}
 		}
 
@@ -122,7 +127,7 @@ public class JaccsonTable {
 
 			// index under the same name?
 			for(int i=0; i < oarr.length(); i++) {
-				indexJSON(oarr.get(i), prefix, rowid);
+				indexJSON(oarr.get(i), prefix, rowid, cv);
 			}
 		}
 
@@ -149,8 +154,11 @@ public class JaccsonTable {
 					byte[] bytes = IndexHelper.indexValueForObject(word);
 
 					Mutation m = new Mutation(new Text(bytes));
-					m.put(tableName + "_" + prefix, rowid, BLANK_VALUE);
-
+					if(cv == null)
+						m.put(tableName + "_" + prefix, rowid, BLANK_VALUE);
+					else
+						m.put(tableName + "_" + prefix, rowid, cv, BLANK_VALUE);
+					
 					indexWriter.addMutation(m);
 				}
 			}
@@ -158,7 +166,10 @@ public class JaccsonTable {
 				byte[] bytes = IndexHelper.indexValueForObject(obj);
 
 				Mutation m = new Mutation(new Text(bytes));
-				m.put(tableName + "_" + prefix, rowid, BLANK_VALUE);
+				if(cv == null)
+					m.put(tableName + "_" + prefix, rowid, BLANK_VALUE);
+				else
+					m.put(tableName + "_" + prefix, rowid, cv, BLANK_VALUE);
 
 				indexWriter.addMutation(m);
 			}
@@ -170,11 +181,27 @@ public class JaccsonTable {
 	}
 
 
-	public String insert(String json) throws JSONException, MutationsRejectedException, TableNotFoundException {
-
-		getWritersReaders();
+	public String insert(String json) throws MutationsRejectedException, TableNotFoundException, JSONException {
+		return insert(new JSONObject(json));
+	}
+	
+	public String insert(JSONObject obj) throws MutationsRejectedException, TableNotFoundException, JSONException {
 		
-		JSONObject obj = new JSONObject(json);
+		return insert(obj, null);
+	}
+	
+	public String insert(String json, String expression) throws MutationsRejectedException, TableNotFoundException, JSONException {
+		return insert(new JSONObject(json), expression);
+	}
+	
+	public String insert(JSONObject obj, String expression) throws MutationsRejectedException, TableNotFoundException, JSONException {
+
+		
+		ColumnVisibility cv = null;
+		if(expression != null)
+			cv = new ColumnVisibility(expression);
+		
+		getWritersReaders();
 
 		String rowid = null;
 		if(obj.has("_id")) {
@@ -186,14 +213,18 @@ public class JaccsonTable {
 		}
 
 		Mutation m = new Mutation(rowid);
-		m.put("JSON", "", new Value(json.getBytes()));
+		if(cv == null)
+			m.put("JSON", "", new Value(obj.toString().getBytes()));
+		else
+			m.put("JSON", "", cv, new Value(obj.toString().getBytes()));
+		
 		writer.addMutation(m);
 
 		// might want to flush writer here, in case index is written before main mutation
 
 		// if no indexed keys, skip
 		if(indexedKeys.size() > 0)
-			indexJSON(obj, "", rowid);
+			indexJSON(obj, "", rowid, cv);
 
 		dirty = true;
 		
@@ -202,24 +233,25 @@ public class JaccsonTable {
 		return rowid;	
 	}
 
-	public int update(String query, String mods) throws JSONException, TableNotFoundException, MutationsRejectedException {
+	public int update(String query, String mods) throws MutationsRejectedException, JSONException, TableNotFoundException {
+		return update(new JSONObject(query), new JSONObject(mods));
+	}
+	
+	public int update(JSONObject query, JSONObject mods) throws JSONException, TableNotFoundException, MutationsRejectedException {
 
 		return update(query, mods, false, false);
 	}
 
-	public int update(String query, String mods, boolean upsert) throws JSONException, TableNotFoundException, MutationsRejectedException {
+	public int update(JSONObject query, JSONObject mods, boolean upsert) throws JSONException, TableNotFoundException, MutationsRejectedException {
 		return update(query, mods, upsert, false);
 	}
 
 	// TODO: remove multi? default to multi=true?
-	public int update(String query, String mods, boolean upsert, boolean multi) throws JSONException, TableNotFoundException, MutationsRejectedException {
+	public int update(JSONObject query, JSONObject modsj, boolean upsert, boolean multi) throws JSONException, TableNotFoundException, MutationsRejectedException {
 		
 		getWritersReaders();
-		
-		// parse mods
-		JSONObject modsj = new JSONObject(mods);
 
-		JaccsonCursor cur = find(query, "");
+		JaccsonCursor cur = find(query, null);
 		boolean found = false;
 		for(JSONObject o : cur) {
 			found = true;
@@ -238,7 +270,7 @@ public class JaccsonTable {
 
 		if(!found && upsert) {
 			// TODO: check that there are no operators
-			insert(mods);
+			insert(modsj);
 		}
 
 		dirty = true;
@@ -246,7 +278,11 @@ public class JaccsonTable {
 		return 0;
 	}
 
-	public boolean remove(String query) throws TableNotFoundException {
+	public boolean remove(String query) throws TableNotFoundException, JSONException {
+		return remove(new JSONObject(query));
+	}
+	
+	public boolean remove(JSONObject query) throws TableNotFoundException {
 
 		getWritersReaders();
 		
@@ -259,6 +295,10 @@ public class JaccsonTable {
 	}
 
 	public JaccsonCursor find(String query, String select) throws TableNotFoundException, JSONException {
+		return find(new JSONObject(query), new JSONObject(select));
+	}
+	
+	public JaccsonCursor find(JSONObject query, JSONObject select) throws TableNotFoundException, JSONException {
 
 		// provides consistency from this client's point of view
 		if(dirty)
@@ -267,17 +307,27 @@ public class JaccsonTable {
 		return new JaccsonCursor(this, query, select);
 	}
 
-	public JSONObject findOne(String query, String select) throws TableNotFoundException, JSONException {
+	public JSONObject findOne(String query, String select) throws JSONException {
+		return findOne(new JSONObject(query), new JSONObject(select));
+	}
+	
+	public JSONObject findOne(JSONObject query, JSONObject select) throws JSONException {
 
 		if(dirty)
 			flush();
 		
-		JaccsonCursor cursor = new JaccsonCursor(this, query, select);
+		JaccsonCursor cursor;
+		try {
+			cursor = new JaccsonCursor(this, query, select);
+			
+			if(!cursor.hasNext())
+				return null;
 
-		if(!cursor.hasNext())
+			return cursor.next();
+			
+		} catch (TableNotFoundException e) {
 			return null;
-
-		return cursor.next();
+		}
 	}
 
 	public JSONObject get(String rowid) throws JSONException {
@@ -290,6 +340,7 @@ public class JaccsonTable {
 		Iterator<Entry<Key, Value>> iter = simpleGetter.iterator();
 		if(!iter.hasNext())
 			return null;
+		
 		return new JSONObject(new String(iter.next().getValue().get()));
 	}
 
@@ -310,6 +361,16 @@ public class JaccsonTable {
 		}	
 	}
 
+	/**
+	 * note - there are no 'composite indexes' all indexed fields are always used 
+	 * so there is no difference between indexing two fields separately or together
+	 * 
+	 * @param key
+	 * @throws AccumuloException
+	 * @throws AccumuloSecurityException
+	 * @throws TableExistsException
+	 * @throws TableNotFoundException
+	 */
 	public void ensureIndex(String key) throws AccumuloException, AccumuloSecurityException, TableExistsException, TableNotFoundException {
 		ensureIndex(key, false);
 	}
@@ -427,13 +488,13 @@ public class JaccsonTable {
 		JaccsonTable table = conn.getTable("indexEmptyTestTable");
 		table.ensureIndex("field");
 
-		table.insert("{field:'aaa', amount:2}");
-		table.insert("{field:'bbb', amount:2}");
-		table.insert("{field:'ccc', amount:2}");
-		table.insert("{field:'ddd', amount:2}");
-		table.insert("{field:'eee', amount:2}");
-		table.insert("{field:'fff', amount:2}");
-		table.insert("{field:'ggg', amount:2}");
+		table.insert(new JSONObject("{field:'aaa', amount:2}"));
+		table.insert(new JSONObject("{field:'bbb', amount:2}"));
+		table.insert(new JSONObject("{field:'ccc', amount:2}"));
+		table.insert(new JSONObject("{field:'ddd', amount:2}"));
+		table.insert(new JSONObject("{field:'eee', amount:2}"));
+		table.insert(new JSONObject("{field:'fff', amount:2}"));
+		table.insert(new JSONObject("{field:'ggg', amount:2}"));
 	}
 
 	public boolean isIndexed(String name) {

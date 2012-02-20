@@ -67,17 +67,27 @@ class Collection(object):
 
     def get(self, oid):
         self.flush()
-        return self.proxy.get(self.name, oid)
+        obj = self.proxy.get(self.name, oid)
+        if obj is None:
+            return None
+        return json.loads(obj)
 
-    def findOne(self, query={}, select={}):
+    def find_one(self, query={}, select={}):
         self.flush()
-        return self.proxy.findOne(self.name, json.dumps(query), json.dumps(select))
+        obj = self.proxy.findOne(self.name, json.dumps(query), json.dumps(select))
+        if obj is None:
+            return None
+        return json.loads(obj)
 
     def find(self, query={}, select={}):
         self.flush()
         label = self.proxy.find(self.name, json.dumps(query), json.dumps(select))
         return Cursor(label, self.proxy)
 
+    def update(self, query={}, mods={}):
+        self.flush()
+        self.proxy.update(self.name, json.dumps(query), json.dumps(mods))
+        
     def remove(self, query={}):
         self.flush()
         self.proxy.remove(self.name, json.dumps(query))
@@ -88,6 +98,10 @@ class Collection(object):
             
     def ensureIndex(self, path):
         self.proxy.ensureIndex(self.name, path)
+        
+    def drop(self):
+        self.proxy.drop(self.name)
+    
             
 
 
@@ -120,9 +134,10 @@ class Cursor(object):
         jo = json.loads(s)
         return jo
 
-c = Connection('localhost:6060')
-coll = c.getCollection('hyperbins_vert')
 
-import pymongo
-rem = pymongo.Connection('localhost:27018').patent_grants.hyperbins_vert
+#c = Connection('localhost:6060')
+#coll = c.getCollection('hyperbins_vert')
+
+#import pymongo
+#rem = pymongo.Connection('localhost:27018').patent_grants.hyperbins_vert
 
