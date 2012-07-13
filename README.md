@@ -17,3 +17,4 @@ Queries also use BatchScanners where necessary to improve performance / simplify
 The bulk of the testing remains to be written for the update code.
 
 Rather than implement drivers in various languages, as Mongo has done, non JVM language support is planned to be provided via a thrift proxy. Mongo users are accustomed to running separate client-side mongos processes to connect to sharded instances, and so shouldn't have any problem with having to run a proxy. This is only required for non JVM languages however, and Java, Scala, Jython, JRuby, Groovy, Clojure, etc should be able to use the Java client library.
+

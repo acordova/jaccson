@@ -19,6 +19,7 @@ import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
+
 import org.json.JSONObject;
 
 import com.jaccson.JaccsonConnection;
@@ -170,7 +171,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 	public void ensureIndex(String table, String path) throws JaccsonException {
 		try {
 			JaccsonTable t = getTable(table, true);
-			t.ensureIndex(path);
+			t.ensureIndex(new JSONObject(path));
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		}
@@ -181,7 +182,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 		try {
 			JaccsonTable t = getTable(table, false);
 
-			t.dropIndex(path);
+			t.dropIndex(new JSONObject(path));
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		}

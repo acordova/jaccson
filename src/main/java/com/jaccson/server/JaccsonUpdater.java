@@ -7,6 +7,7 @@ import java.util.Iterator;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.Combiner;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,10 +17,22 @@ import com.jaccson.JSONHelper;
 
 public class JaccsonUpdater extends Combiner {
 
-	private enum operator {
+	static final Logger log = Logger.getLogger(JaccsonUpdater.class);
+	
+	static JSONObject deleteMarker = null;
+	{
+		try {
+			deleteMarker = new JSONObject("{$delete:1}");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public enum operator {
 		$inc, $set, $unset, $push, $pushAll,
 		$addToSet, $each, $pop, $pull, $pullAll, 
-		$rename, $bit
+		$rename, $bit, $delete
 	}
 
 	// TODO: raise an error if an array is not found
@@ -298,8 +311,20 @@ public class JaccsonUpdater extends Combiner {
 
 			String op = keyIter.next().toString();
 
+			operator x;
+			try {
+				x = operator.valueOf(op);
+			}
+			catch (IllegalArgumentException iae){
+				log.info("simple overwrite");
+				finalObj = update;
+				break;
+			}
+					
+			log.info(x.toString());
+			
 			// updates should contain at least one update operator ...		
-			switch(operator.valueOf(op)) {
+			switch(x) {
 			case $inc: { 
 				finalObj = increment((JSONObject)update.get(op), finalObj);
 				break;
@@ -344,10 +369,8 @@ public class JaccsonUpdater extends Combiner {
 				//bit((JSONObject)next.get(fieldName), finalObj);
 				break;
 			}
-			// basic insert / overwrite
-			default: {
-				finalObj = update;
-				break;
+			case $delete: {
+				finalObj = null;
 			}
 			}
 		}
@@ -360,25 +383,33 @@ public class JaccsonUpdater extends Combiner {
 
 		JSONObject finalObj = null; 
 
-		// handle initial key - if regular value or update + upsert ...
-
+		// JaccsonTable inserts all mutations with reverse timestamps 
+		// so we can apply these as we read them
+		
+		// TODO: if we have only one complete doc, avoid serializing and deserializing again
 		while(iter.hasNext()) {
-
+			
 			try {
-
 				JSONObject next = new JSONObject(new String(iter.next().get()));
-
+				
+				log.info(next.toString());
 				finalObj = applyUpdate(next, finalObj);
 
 			}
 			catch(JSONException je) {
 				// can happen if an array is not found, for example ...
+				log.info(je.getMessage());
 			}
 			catch (IllegalArgumentException iae) {
 				// TODO: handle this
+				log.info(iae.getMessage());
 			}
 		}
 
+		if(finalObj == null) {
+			finalObj = deleteMarker;
+		}
+		
 		return new Value(finalObj.toString().getBytes());
 	}
 }

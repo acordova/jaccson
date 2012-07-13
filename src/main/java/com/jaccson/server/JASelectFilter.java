@@ -51,7 +51,7 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 				Object o = JSONHelper.subObjectForPath(name, vo);
 				
 				// merge subdocs into one doc
-				selected.put(name, );
+				//selected.put(name, );
 			}
 			
 		} catch (JSONException e) {

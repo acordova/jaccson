@@ -40,7 +40,11 @@ public class BuildIndexMR implements Tool {
 				
 				JSONObject jobj = (JSONObject) obj;
 				
-				for(String name : JSONObject.getNames(jobj)) {
+				String[] names = JSONObject.getNames(jobj);
+				if(names == null)
+					return;
+				
+				for(String name : names) {
 					Object o = jobj.get(name);
 					
 					indexJSON(o, prefix + name + ".", rowid);
@@ -74,8 +78,10 @@ public class BuildIndexMR implements Tool {
 						words.add(s.toLowerCase());
 					}
 					for(String word: words) {
-						byte[] bytes = IndexHelper.indexValueForObject(word);
+						if(word.length() == 0)
+							continue;
 						
+						byte[] bytes = IndexHelper.indexValueForObject(word);
 						
 						Mutation m = new Mutation(new Text(bytes));
 						m.put(tableName + "_" + prefix, rowid, BLANK_VALUE);
@@ -108,7 +114,7 @@ public class BuildIndexMR implements Tool {
 			Instance inst = new ZooKeeperInstance(conf.get("acc.instance"), conf.get("acc.zkservers"));
 			try {
 				Connector conn = inst.getConnector(conf.get("acc.username"), conf.get("acc.password").getBytes());
-				indexWriter = conn.createBatchWriter(tableName + "_" + indexField.replace(',', '_'), 1000000L, 1000L, 10);
+				indexWriter = conn.createBatchWriter(tableName + "_" + indexField.replace('.', '_'), 1000000L, 1000L, 10);
 			} catch (AccumuloException e) {
 
 				e.printStackTrace();

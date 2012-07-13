@@ -20,7 +20,7 @@ public class BasicTests extends TestCase {
 
 		try {
 
-			JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
+			JaccsonConnection conn = new JaccsonConnection("Aarons-MacBook-Air.local", "acc", "root", "secret", "");
 
 			conn.dropTable("putGetTestTable");
 
@@ -41,7 +41,7 @@ public class BasicTests extends TestCase {
 		} 
 	}
 
-	public void testInsertSpeed() {
+/*	public void testInsertSpeed() {
 
 		int n = 100000;
 
@@ -66,7 +66,7 @@ public class BasicTests extends TestCase {
 			e.printStackTrace();
 			assertTrue(false);
 		}
-	}
+	}*/
 
 	public void testCreateIndexEmptyTable() {
 
@@ -76,7 +76,7 @@ public class BasicTests extends TestCase {
 
 			conn.dropTable("indexEmptyTestTable");
 			JaccsonTable table = conn.getTable("indexEmptyTestTable");
-			table.ensureIndex("field");
+			table.ensureIndex(new JSONObject("{field:1}"));
 
 			System.out.println("done indexing");
 
@@ -91,7 +91,7 @@ public class BasicTests extends TestCase {
 
 			// query by index
 
-			JaccsonCursor cursor = table.find("{field:'aaa'}", "");
+			JaccsonCursor cursor = table.find("{field:'aaa'}");
 			int count = 0;
 			for(JSONObject o : cursor) {
 				System.out.println(o);

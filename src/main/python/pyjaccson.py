@@ -5,12 +5,13 @@ sys.path.append('gen-py')
 from jaccson import TableCursorService
 from jaccson.ttypes import *
 
-from thrift import Thrift
+from thrift import Thrift, TApplicationException
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 import json
+import uuid
 
 
 class Connection(object):
@@ -60,10 +61,19 @@ class Collection(object):
         self.batch = []
         
     def insert(self, jo):
+
+        if not jo.has_key('_id'):
+            jo['_id'] = str(uuid.uuid4())
+            
+        _id = jo['_id']
+        
         jos = json.dumps(jo)
+        
         self.batch.append(jos)
         if len(self.batch) > self.batchSize:
             self._insertBatch()
+            
+        return _id
 
     def get(self, oid):
         self.flush()
@@ -86,18 +96,25 @@ class Collection(object):
 
     def update(self, query={}, mods={}):
         self.flush()
+        
+        # batch?
         self.proxy.update(self.name, json.dumps(query), json.dumps(mods))
         
     def remove(self, query={}):
         self.flush()
+        
+        # batch?
         self.proxy.remove(self.name, json.dumps(query))
                       
     def flush(self):
         if len(self.batch) > 0:
             self._insertBatch()
             
-    def ensureIndex(self, path):
-        self.proxy.ensureIndex(self.name, path)
+    def ensureIndex(self, obj, block=False):
+        self.proxy.ensureIndex(self.name, json.dumps(obj), block)
+        
+    def dropIndex(self, obj):
+        self.proxy.dropIndex(self.name, json.dumps(obj));
         
     def drop(self):
         self.proxy.drop(self.name)

@@ -20,9 +20,9 @@ service TableCursorService {
 	
 	void flush(1:string table) throws (1:JaccsonException e),
 	
-	void ensureIndex(1:string table, 2:string path) throws (1:JaccsonException e),
+	void ensureIndex(1:string table, 2:string obj, 3:bool drop) throws (1:JaccsonException e),
 	
-	void dropIndex(1:string table, 2:string path) throws (1:JaccsonException e),
+	void dropIndex(1:string table, 2:string obj) throws (1:JaccsonException e),
 	
 	void compact(1:string table) throws (1:JaccsonException e),
 	

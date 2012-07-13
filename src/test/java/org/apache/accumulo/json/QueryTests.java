@@ -25,7 +25,7 @@ public class QueryTests {
 
 			conn.dropTable("intest");
 			JaccsonTable table = conn.getTable("intest");
-			table.ensureIndex("wheel_bin");
+			table.ensureIndex(new JSONObject("{wheel_bin:1}"));
 
 			for(int i=0; i < 20; i++) { 
 				String bins = "[";

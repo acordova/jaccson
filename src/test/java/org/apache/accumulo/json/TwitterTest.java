@@ -9,14 +9,14 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import twitter4j.Status;
+/*import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
 import twitter4j.TwitterException;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.conf.ConfigurationBuilder;
-
+*/
 import com.jaccson.JaccsonConnection;
 import com.jaccson.JaccsonTable;
 
@@ -28,7 +28,7 @@ import com.jaccson.JaccsonTable;
  * based on work by Twitter4j author  Yusuke Yamamoto - yusuke at mac.com
  */
 
-
+/*
 public class TwitterTest {
 
 
@@ -101,7 +101,7 @@ public class TwitterTest {
 	 * @throws TableExistsException 
 	 * @throws TableNotFoundException 
 	 * @throws JSONException 
-	 */
+	 *
 	public static void main(String[] args) throws TwitterException, AccumuloException, AccumuloSecurityException, TableExistsException, TableNotFoundException, JSONException {
 
 		JaccsonConnection conn = new JaccsonConnection("new-host.home:2181", "test", "root", "secret", null);
@@ -126,3 +126,4 @@ public class TwitterTest {
 	}
 }
 
+*/
