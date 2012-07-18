@@ -28,11 +28,6 @@
   		<version>20090211</version>
   	</dependency>
   	<dependency>
-  		<groupId>org.apache.accumulo</groupId>
-  		<artifactId>accumulo-core</artifactId>
-  		<version>1.4.0-incubating-SNAPSHOT</version>
-  	</dependency>
-  	<dependency>
   		<groupId>org.apache.thrift</groupId>
   		<artifactId>libthrift</artifactId>
   		<version>0.6.1</version>
@@ -58,8 +53,8 @@
   	</dependency>
   	<dependency>
   		<groupId>org.apache.accumulo</groupId>
-  		<artifactId>cloudtrace</artifactId>
-  		<version>1.4.0-incubating-SNAPSHOT</version>
+  		<artifactId>accumulo-core</artifactId>
+  		<version>1.4.0</version>
   	</dependency>
   	<dependency>
   		<groupId>org.apache.hadoop</groupId>

@@ -478,8 +478,17 @@ public class JaccsonTable {
 		return new JaccsonCursor(this, query, select);
 	}
 
+	public JSONObject findOne(String query) throws JSONException {
+		return findOne(query, null);
+	}
+	
 	public JSONObject findOne(String query, String select) throws JSONException {
-		return findOne(new JSONObject(query), new JSONObject(select));
+		if(select == null) {
+			return findOne(new JSONObject(query), null);
+		}
+		else {
+			return findOne(new JSONObject(query), new JSONObject(select));
+		}
 	}
 
 	public JSONObject findOne(JSONObject query, JSONObject select) throws JSONException {
@@ -512,7 +521,10 @@ public class JaccsonTable {
 		if(!iter.hasNext())
 			return null;
 
-		return new JSONObject(new String(iter.next().getValue().get()));
+		Entry<Key, Value> pair = iter.next();
+		JSONObject obj = JSONHelper.objectForKeyValue(pair);
+		
+		return obj;
 	}
 
 	public void close() {
@@ -532,6 +544,10 @@ public class JaccsonTable {
 		}	
 	}
 
+	public void ensureIndex(String json) throws AccumuloException, AccumuloSecurityException, TableExistsException, TableNotFoundException, JSONException {
+		ensureIndex(new JSONObject(json));
+	}
+	
 	/**
 	 * note - there are no 'composite indexes' all indexed fields are always used 
 	 * so there is no difference between indexing two fields separately or together

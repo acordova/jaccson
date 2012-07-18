@@ -7,7 +7,7 @@ import com.jaccson.JaccsonConnection;
 
 public class ConnectTest {
 	public static void main(String args[] ) throws AccumuloException, AccumuloSecurityException {
-		JaccsonConnection conn = new JaccsonConnection("Aarons-MacBook-Air.local", "acc", "root", "secret", "");
+		JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
 
 	}
 }

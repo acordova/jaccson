@@ -110,7 +110,25 @@ public class JSONHelper {
 		return field;
 	}
 
-	// this is used to support select operations
+	
+	// these methods are used to support select operations
+
+	
+	// remove first .-separated component
+	public static String suffixPath(String path) {
+		
+		String[] steps = path.split("\\.");
+		
+		String subpath = "";
+		for(int i=1; i < steps.length; i++)
+			subpath += steps[i] + ".";
+
+		// remove last .
+		subpath = subpath.substring(0, subpath.length()-1);
+
+		return subpath;
+	}
+	
 	public static Object subObjectForPath(String path, Object o) {
 
 		if(o instanceof JSONArray) {
@@ -142,12 +160,7 @@ public class JSONHelper {
 					return sub;
 				}
 
-				String subpath = "";
-				for(int i=1; i < steps.length; i++)
-					subpath += steps[i] + ".";
-
-				// remove last .
-				subpath = subpath.substring(0, subpath.length()-1);
+				String subpath = suffixPath(path);
 
 				// recurse
 				if(((JSONObject)o).has(steps[0]))

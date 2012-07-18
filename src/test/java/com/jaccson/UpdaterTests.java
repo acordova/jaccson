@@ -266,6 +266,8 @@ public class UpdaterTests {
 			
 			JaccsonUpdater.applyUpdate(new JSONObject("{'$inc':{amount:12}}"), o);
 			
+			assertTrue(o.getInt("amount") == 17);
+			
 		}
 		catch (Exception e) {
 			e.printStackTrace();

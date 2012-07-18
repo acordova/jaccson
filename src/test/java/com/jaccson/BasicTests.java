@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,7 +21,7 @@ public class BasicTests extends TestCase {
 
 		try {
 
-			JaccsonConnection conn = new JaccsonConnection("Aarons-MacBook-Air.local", "acc", "root", "secret", "");
+			JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
 
 			conn.dropTable("putGetTestTable");
 
@@ -41,7 +42,9 @@ public class BasicTests extends TestCase {
 		} 
 	}
 
-/*	public void testInsertSpeed() {
+	// TODO: write a tests for trying to update _id
+
+	/*	public void testInsertSpeed() {
 
 		int n = 100000;
 
@@ -67,6 +70,45 @@ public class BasicTests extends TestCase {
 			assertTrue(false);
 		}
 	}*/
+	
+	private void insertsAndQueries(JaccsonTable table) throws Exception {
+		
+		table.insert("{field:'aaa', amount:2}");
+		table.insert("{field:'aaa', amount:6}");
+		table.insert("{field:'bbb', amount:2}");
+		table.insert("{field:'ccc', amount:2}");
+		table.insert("{field:'ddd', amount:2}");
+		table.insert("{field:'eee', amount:2}");
+		table.insert("{field:'fff', amount:2}");
+		table.insert("{field:'ggg', amount:2}");
+
+
+
+		JaccsonCursor cursor = table.find("{field:'aaa'}", "");
+		int count = 0;
+		for(JSONObject o : cursor) {
+			System.out.println(o);
+			count++;
+		}
+		assertEquals(count, 2);
+
+		cursor = table.find("{field:'bbb'}", "");
+		count = 0;
+		for(JSONObject o : cursor) {
+			System.out.println(o);
+			count++;
+		}
+		assertEquals(count, 1);
+
+		cursor = table.find("{field:'ggg'}", "");
+		count = 0;
+		for(JSONObject o : cursor) {
+			System.out.println(o);
+			count++;
+		}
+
+		assertEquals(count, 1);
+	}
 
 	public void testCreateIndexEmptyTable() {
 
@@ -76,29 +118,11 @@ public class BasicTests extends TestCase {
 
 			conn.dropTable("indexEmptyTestTable");
 			JaccsonTable table = conn.getTable("indexEmptyTestTable");
-			table.ensureIndex(new JSONObject("{field:1}"));
+			table.ensureIndex("{field:1}");
 
 			System.out.println("done indexing");
 
-			table.insert("{field:'aaa', amount:2}");
-			table.insert("{field:'aaa', amount:6}");
-			table.insert("{field:'bbb', amount:2}");
-			table.insert("{field:'ccc', amount:2}");
-			table.insert("{field:'ddd', amount:2}");
-			table.insert("{field:'eee', amount:2}");
-			table.insert("{field:'fff', amount:2}");
-			table.insert("{field:'ggg', amount:2}");
-
-			// query by index
-
-			JaccsonCursor cursor = table.find("{field:'aaa'}");
-			int count = 0;
-			for(JSONObject o : cursor) {
-				System.out.println(o);
-				count++;
-			}
-
-			assertEquals(count, 2);
+			insertsAndQueries(table);
 
 			conn.dropTable("indexEmptyTestTable");
 
@@ -117,62 +141,14 @@ public class BasicTests extends TestCase {
 		try {
 			JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
 
-			conn.dropTable("indexTestTable");
-			JaccsonTable table = conn.getTable("indexTestTable");
+			conn.dropTable("unindexedTestTable");
+			JaccsonTable table = conn.getTable("unindexedTestTable");
 
 
-			System.out.println("done indexing");
-
-			table.insert("{field:'aaa', amount:2}");
-			table.insert("{field:'aaa', amount:6}");
-			table.insert("{field:'bbb', amount:2}");
-			table.insert("{field:'ccc', amount:2}");
-			table.insert("{field:'ddd', amount:2}");
-			table.insert("{field:'eee', amount:2}");
-			table.insert("{field:'fff', amount:2}");
-			table.insert("{field:'ggg', amount:2}");
+			insertsAndQueries(table);
 
 
-			// query by index
-
-			JaccsonCursor cursor = table.find("{field:'aaa'}", "");
-			int count = 0;
-			for(JSONObject o : cursor) {
-				System.out.println(o);
-				count++;
-			}
-
-			assertEquals(count, 2);
-
-			table.insert("{book: {title:'java', author:'me'}, price: 100.0}");
-
-			// test inner doc
-			cursor = table.find("{book.author:'me'}", "");
-			count = 0;
-			for(JSONObject o : cursor) {
-				System.out.println(o);
-				count++;
-			}
-
-			assertEquals(count, 1);
-
-			// test through array
-
-			table.insert("{planes:[{model:'a',fuel:30},{model:'b',fuel:40}]}");
-
-
-			cursor = table.find("{planes.fuel: 40}", "");
-			count = 0;
-			for(JSONObject o : cursor) {
-				System.out.println();
-				count++;
-			}
-
-			//table.ensureIndex("field");
-
-			//
-
-			conn.dropTable("indexTestTable");
+			conn.dropTable("unindexedTestTable");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -180,25 +156,83 @@ public class BasicTests extends TestCase {
 		} 
 	}
 
-	public void testFilteredFullTableScan() {
 
+	private void insertQuerySubObject(JaccsonTable table) throws Exception {
+		table.insert("{book: {title:'java', author:'me'}, price: 100.0}");
+		table.insert("{book: {title:'java', author:'bob'}, price: 100.0}");
+		table.insert("{book: {title:'java', author:'joe'}, price: 100.0}");
+
+		// test inner doc
+		JaccsonCursor cursor = table.find("{book.author:'me'}", "");
+		int count = 0;
+		for(JSONObject o : cursor) {
+			System.out.println(o);
+			count++;
+		}
+
+		assertEquals(count, 1);
 	}
-
-	public void testIndexUsage() {
-
-	}
-
+	
 	public void testIndexSubobject() {
 
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+
+
+			conn.dropTable("indexSubObject");
+			JaccsonTable table = conn.getTable("indexSubObject");
+
+			table.ensureIndex("{book.author:1}");
+			insertQuerySubObject(table);
+			
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		} 
 	}
 
+	private void insertQueryArray(JaccsonTable table) throws Exception{
+		table.insert("{planes:[{model:'a',fuel:20},{model:'b',fuel:40}]}");
+		table.insert("{planes:[{model:'c',fuel:30},{model:'d',fuel:50}]}");
+		table.insert("{planes:[{model:'e',fuel:40},{model:'f',fuel:60}]}");
+		table.insert("{planes:[{model:'g',fuel:50},{model:'h',fuel:70}]}");
+
+		JaccsonCursor cursor = table.find("{planes.fuel: 40}", "");
+		int count = 0;
+		for(JSONObject o : cursor) {
+			System.out.println();
+			count++;
+		}
+
+		assertEquals(count, 2);
+	}
+	
 	public void testIndexArray() {
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
 
+			conn.dropTable("indexArray");
+			JaccsonTable table = conn.getTable("indexArray");
+			
+			table.ensureIndex("{planes.model.fuel:1}");
+			insertQueryArray(table);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+
+		assertTrue(false);
 	}
 
 
 
-	public void testUpdateInc() {
+	public void testUpdateNonExistInc() {
 
 		JaccsonConnection conn;
 		try {
@@ -210,74 +244,254 @@ public class BasicTests extends TestCase {
 
 			// test with no previous object
 			table.update("{_id:333}", "{newfield:1}");
-			//table.findOne("{incrtest:1}")
+			JSONObject obj = table.findOne("{_id:333}");
+			assertTrue(obj.getInt("newfield") == 1);
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		} 
+	}
+
+	public void testUpdateExistInc() {
+
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
+
+
+			conn.dropTable("updateInc");
+			JaccsonTable table = conn.getTable("updateInc");
+
 
 			// test with prev object
+			table.insert("{_id:333, newfield:1}");
+
+			table.update("{_id:333}", "{$inc:{newfield:1}}");
+			JSONObject obj = table.findOne("{_id:333}");
+			assertTrue(obj.getInt("newfield") == 2);
+
+			// test with larger amount
+			table.update("{_id:333}", "{$inc:{newfield:14}}");
+			obj = table.findOne("{_id:333}");
+			assertTrue(obj.getInt("newfield") == 16);
 
 			// test negative incr
+			table.update("{_id:333}", "{$inc:{newfield:-7}}");
+			obj = table.findOne("{_id:333}");
+			assertTrue(obj.getInt("newfield") == 9);
+
 
 			// test overwrite
+			table.insert("{_id:333, newfield:0}");
+
+			obj = table.findOne("{_id:333}");
+			assertTrue(obj.getInt("newfield") == 0);
 
 
 			conn.dropTable("indexTestTable");
 
-		} catch (AccumuloException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			assertTrue(false);
+		} 
 	}
 
 	public void testUpdateSet() {
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
 
+
+			conn.dropTable("updateSet");
+			JaccsonTable table = conn.getTable("updateSet");
+
+			table.insert("{_id:334, x:5}");
+
+			table.update("{_id:334}", "{$set:{x:'a'}");
+
+			JSONObject obj = table.findOne("{_id:334}");
+			assertTrue(obj.getString("x").equals("a"));
+
+			conn.dropTable("updateSet");
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		} 
+	}
+
+	public void testUpdateNonexistSet() {
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
+
+
+			conn.dropTable("updateNESet");
+			JaccsonTable table = conn.getTable("updateNESet");
+
+			// this should act the same as 
+			// table.insert("{_id:334, x:'a'}");
+			table.update("{_id:334}", "{$set:{x:'a'}");
+
+			JSONObject obj = table.findOne("{_id:334}");
+			assertTrue(obj.getString("x").equals("a"));
+
+			conn.dropTable("updateNESet");
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		} 
 	}
 
 	public void testUpdateUnset() {
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
 
+
+			conn.dropTable("updateUnset");
+			JaccsonTable table = conn.getTable("updateUnset");
+
+			table.insert("{_id:334, x:5}");
+
+			table.update("{_id:334}", "{$unset:x}");
+
+			JSONObject obj = table.findOne("{_id:334}");
+			assertTrue(obj.getString("x") == null);
+
+			conn.dropTable("updateUnset");
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		
+		assertTrue(false);
 	}
 
 	public void testUpdatePush() {
-
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		
+		assertTrue(false);
 	}
 
 	public void testUpdatePushAll() {
-
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		
+		assertTrue(false);
 	}
 
 	public void testUpdateAddToSet() {
-
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		
+		assertTrue(false);
 	}
 
 	public void testUpdateEach() {
-
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		
+		assertTrue(false);
 	}
 
 	public void testUpdatePop() {
-
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		
+		assertTrue(false);
 	}
 
 	public void testUpdatePull() {
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		} 
 
+		assertTrue(false);
 	}
 
 	public void testUpdatePullAll() {
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		} 
 
+		assertTrue(false);
 	}
 
 	public void testUpdateRename() {
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		} 
 
+
+		assertTrue(false);
 	}
 
 	public void testUpdateBit() {
+		JaccsonConnection conn;
+		try {
+			conn = new JaccsonConnection("localhost","acc","root","secret","");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		} 
 
+		assertTrue(false);
 	}
 }
 

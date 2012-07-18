@@ -19,18 +19,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.jaccson.JSONHelper;
+import com.jaccson.SelectFilter;
 
-
-public class JASelectFilter  extends WrappingIterator implements OptionDescriber {
+/**
+ * note that this doesn't work like an Accumulo filter, which in our case would filter
+ * out entire JSON object, rather this filter suppresses unselected fields within each 
+ * JSON object
+ * 
+ * @author aaron
+ *
+ */
+public class SelectIterator  extends WrappingIterator implements OptionDescriber {
 	
-	JSONObject select;
+	JSONObject filter;
 
 	//private static final Logger log = Logger.getLogger(IteratorUtil.class);
 
 
-	public JASelectFilter() {}
+	public SelectIterator() {}
 
-	public JASelectFilter(SortedKeyValueIterator<Key,Value> iterator) throws IOException {
+	public SelectIterator(SortedKeyValueIterator<Key,Value> iterator) throws IOException {
 		this.setSource(iterator);
 
 	}
@@ -40,25 +48,20 @@ public class JASelectFilter  extends WrappingIterator implements OptionDescriber
 		
 		Value v = super.getTopValue();
 		
-		JSONObject selected = new JSONObject();
+		JSONObject selected;
 		
 		try {
 			JSONObject vo = new JSONObject(new String(v.get()));
 			
 			// perform select
-			for(String name : JSONObject.getNames(vo)) {
-				// pull out a subdoc
-				Object o = JSONHelper.subObjectForPath(name, vo);
-				
-				// merge subdocs into one doc
-				//selected.put(name, );
-			}
+			selected = SelectFilter.select(vo, filter);
 			
+			return new Value(selected.toString().getBytes());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		
-		return new Value(selected.toString().getBytes());
+		return v;
 	}
 	
 
