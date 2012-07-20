@@ -12,6 +12,7 @@
 package com.jaccson;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,17 +35,17 @@ import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.Combiner;
+import org.apache.accumulo.core.iterators.IteratorUtil;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
-
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ToolRunner;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.jaccson.server.JaccsonUpdater;
+import com.jaccson.server.SelectIterator;
 import com.jaccson.server.JaccsonUpdater.operator;
 
 public class JaccsonTable {
@@ -63,36 +64,46 @@ public class JaccsonTable {
 	private HashMap<String,BatchWriter> indexWriters;
 
 	private static final Value BLANK_VALUE = new Value("".getBytes());
+	
+	private void createTable(String tableName) throws TableNotFoundException {
+		try {
+			conn.tableOperations().create(tableName);
 
+			// remove default versioning iterator
+			conn.tableOperations().removeIterator(tableName, "vers", EnumSet.allOf(IteratorUtil.IteratorScope.class));
+			
+			
+			// apply update iterator
+			IteratorSetting upiterset = new IteratorSetting(IterStack.UPDATER_ITERATOR_PRI, "jaccsonUpdater", "com.jaccson.server.JaccsonUpdater");
+
+			ArrayList<IteratorSetting.Column> cols = new ArrayList<IteratorSetting.Column>();
+			cols.add(new IteratorSetting.Column("JSON"));
+			Combiner.setColumns(upiterset, cols);
+			conn.tableOperations().attachIterator(tableName, upiterset);
+			
+			
+			// apply deleted filter
+			IteratorSetting deliterset = new IteratorSetting(IterStack.DELETED_ITERATOR_PRI, "jaccsonDeleter", "com.jaccson.server.DeletedFilter");
+			conn.tableOperations().attachIterator(tableName, deliterset);
+			
+
+			// TODO: need to throw any of these?
+		} catch (AccumuloException e) {
+			e.printStackTrace();
+		} catch (AccumuloSecurityException e) {
+			e.printStackTrace();
+		} catch (TableExistsException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void getWritersReaders() throws TableNotFoundException {
 
 		if(writer != null)
 			return;
 
 		if(!conn.tableOperations().exists(tableName)) {
-			try {
-				conn.tableOperations().create(tableName);
-
-				// apply update iterator
-				IteratorSetting upiterset = new IteratorSetting(10, "jaccsonUpdater", "com.jaccson.server.JaccsonUpdater");
-
-				ArrayList<IteratorSetting.Column> cols = new ArrayList<IteratorSetting.Column>();
-				cols.add(new IteratorSetting.Column("JSON"));
-				Combiner.setColumns(upiterset, cols);
-				conn.tableOperations().attachIterator(tableName, upiterset);
-
-				// apply deleted filter
-				IteratorSetting deliterset = new IteratorSetting(15, "jaccsonDeleter", "com.jaccson.server.DeletedFilter");
-				conn.tableOperations().attachIterator(tableName, deliterset);
-
-				// TODO: need to throw any of these?
-			} catch (AccumuloException e) {
-				e.printStackTrace();
-			} catch (AccumuloSecurityException e) {
-				e.printStackTrace();
-			} catch (TableExistsException e) {
-				e.printStackTrace();
-			}
+			createTable(tableName);
 		}
 
 		writer = conn.createBatchWriter(tableName, 1000000L, 1000L, 10);
@@ -410,6 +421,10 @@ public class JaccsonTable {
 			// TODO: implement
 			break;
 		}
+		case $delete: {
+			// ignore? .. users shouldn't use this ...
+			break;
+		}
 
 		}
 	}
@@ -425,7 +440,7 @@ public class JaccsonTable {
 		String rowid = query.getString("_id");
 
 		// just delete this one object
-		if(rowid != null) {
+		if(rowid != null) { // TODO: look at any other clauses? warn user that they're ignored?
 			Mutation m = new Mutation(rowid);
 			m.put("JSON", "", Long.MAX_VALUE - System.currentTimeMillis(), "{$delete:1}");
 			writer.addMutation(m);
@@ -471,6 +486,8 @@ public class JaccsonTable {
 	
 	public JaccsonCursor find(JSONObject query, JSONObject select) throws TableNotFoundException, JSONException {
 
+		// TODO: shortcut queries of the form {_id:x}
+		
 		// provides consistency from this client's point of view
 		if(dirty)
 			flush();
@@ -512,19 +529,33 @@ public class JaccsonTable {
 
 	public JSONObject get(String rowid) throws JSONException {
 
+		return get(rowid, (JSONObject)null);
+	}
+	
+	public JSONObject get(String rowid, String select) throws JSONException {
+		
+		return get(rowid, new JSONObject(select));
+	}
+	
+	public JSONObject get(String rowid, JSONObject select) {
+		
 		if(dirty)
 			flush();
 
 		simpleGetter.setRange(new Range(rowid));
 
-		Iterator<Entry<Key, Value>> iter = simpleGetter.iterator();
-		if(!iter.hasNext())
-			return null;
-
-		Entry<Key, Value> pair = iter.next();
-		JSONObject obj = JSONHelper.objectForKeyValue(pair);
+		if(select != null)
+			SelectIterator.setSelectOnScanner(simpleGetter, select);
 		
-		return obj;
+		JSONObject result = null;
+		Iterator<Entry<Key, Value>> iter = simpleGetter.iterator();
+		if(iter.hasNext()) {
+			Entry<Key, Value> pair = iter.next();
+			result = JSONHelper.objectForEntry(pair);
+		}
+		
+		SelectIterator.removeSelectOnScanner(simpleGetter);
+		return result;
 	}
 
 	public void close() {
@@ -549,7 +580,7 @@ public class JaccsonTable {
 	}
 	
 	/**
-	 * note - there are no 'composite indexes' all indexed fields are always used 
+	 * note - there are no 'composite indexes', rather all indexed fields are always used 
 	 * so there is no difference between indexing two fields separately or together
 	 * 
 	 * @param key
@@ -625,9 +656,12 @@ public class JaccsonTable {
 		}
 	}
 
-	public void compact() {
-		// TODO: implement
-
+	public void compact() throws AccumuloSecurityException, TableNotFoundException, AccumuloException {
+		compact(false, false);
+	}
+	
+	public void compact(boolean flush, boolean wait) throws AccumuloSecurityException, TableNotFoundException, AccumuloException {
+		conn.tableOperations().compact(tableName, null, null, true, wait);
 	}
 
 	public void drop() throws AccumuloException, AccumuloSecurityException {

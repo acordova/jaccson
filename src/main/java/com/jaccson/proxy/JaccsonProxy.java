@@ -165,7 +165,7 @@ public class JaccsonProxy implements TableCursorService.Iface {
 	}
 
 	public void close(String table) throws JaccsonException {
-
+		// TODO: implement?
 	}
 
 	public void ensureIndex(String table, String path) throws JaccsonException {
@@ -190,8 +190,12 @@ public class JaccsonProxy implements TableCursorService.Iface {
 	}
 
 	public void compact(String table) throws JaccsonException {
-		// TODO Auto-generated method stub
-
+		try {
+			JaccsonTable t = getTable(table, false);
+			t.compact();
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
+		}
 	}
 
 	public void drop(String table) throws JaccsonException {

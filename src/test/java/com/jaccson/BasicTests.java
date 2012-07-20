@@ -2,17 +2,7 @@ package com.jaccson;
 
 import junit.framework.TestCase;
 
-
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.MutationsRejectedException;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.jaccson.JaccsonCursor;
-import com.jaccson.JaccsonConnection;
-import com.jaccson.JaccsonTable;
 
 public class BasicTests extends TestCase {
 
@@ -23,9 +13,9 @@ public class BasicTests extends TestCase {
 
 			JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
 
-			conn.dropTable("putGetTestTable");
+			conn.dropTable("putGetTable");
 
-			JaccsonTable table = conn.getTable("putGetTestTable");
+			JaccsonTable table = conn.getTable("putGetTable");
 			table.insert("{_id:'123', field:'abc', amount:3}");
 			table.flush();
 
@@ -33,7 +23,7 @@ public class BasicTests extends TestCase {
 			System.out.println(o);
 
 			table.close();
-			conn.dropTable("putGetTestTable");
+			conn.dropTable("putGetTable");
 			assertTrue(o.toString().equals("{\"amount\":3,\"field\":\"abc\",\"_id\":\"123\"}"));
 
 		} catch (Exception e) {
@@ -41,7 +31,54 @@ public class BasicTests extends TestCase {
 			assertTrue(false);
 		} 
 	}
+	
+	public void testPutGetSelect() {
+		try {
 
+			JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
+
+			conn.dropTable("putGetSelectTable");
+
+			JaccsonTable table = conn.getTable("putGetSelectTable");
+			table.insert("{_id:'123', field:'abc', amount:3}");
+			table.flush();
+
+			JSONObject o = table.get("123", "{field:1}");
+			System.out.println(o);
+
+			table.close();
+			conn.dropTable("putGetTestTable");
+			assertTrue(o.toString().equals("{\"field\":\"abc\",\"_id\":\"123\"}"));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertTrue(false);
+		} 
+	}
+
+	public void testFindSelect() {
+		try {
+
+			JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
+
+			conn.dropTable("findSelectTable");
+
+			JaccsonTable table = conn.getTable("findSelectTable");
+			table.insert("{_id:'123', field:'abc', amount:3}");
+			table.flush();
+
+			JaccsonCursor cur = table.find("{_id:'123'}", "{field:1}");
+			JSONObject o = cur.next();
+
+			conn.dropTable("findSelectTable");
+			assertTrue(o.toString().equals("{\"field\":\"abc\",\"_id\":\"123\"}"));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertTrue(false);
+		} 
+	}
+	
 	// TODO: write a tests for trying to update _id
 
 	/*	public void testInsertSpeed() {
@@ -81,7 +118,6 @@ public class BasicTests extends TestCase {
 		table.insert("{field:'eee', amount:2}");
 		table.insert("{field:'fff', amount:2}");
 		table.insert("{field:'ggg', amount:2}");
-
 
 
 		JaccsonCursor cursor = table.find("{field:'aaa'}", "");
@@ -136,7 +172,6 @@ public class BasicTests extends TestCase {
 	 * query on unindexed fields
 	 */
 	public void testUnindexedQuery() {
-
 
 		try {
 			JaccsonConnection conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
@@ -308,11 +343,11 @@ public class BasicTests extends TestCase {
 			conn.dropTable("updateSet");
 			JaccsonTable table = conn.getTable("updateSet");
 
-			table.insert("{_id:334, x:5}");
+			table.insert("{_id:'334', x:5}");
 
-			table.update("{_id:334}", "{$set:{x:'a'}");
+			table.update("{_id:'334'}", "{$set:{x:'a'}");
 
-			JSONObject obj = table.findOne("{_id:334}");
+			JSONObject obj = table.findOne("{_id:'334'}");
 			assertTrue(obj.getString("x").equals("a"));
 
 			conn.dropTable("updateSet");
@@ -335,9 +370,9 @@ public class BasicTests extends TestCase {
 
 			// this should act the same as 
 			// table.insert("{_id:334, x:'a'}");
-			table.update("{_id:334}", "{$set:{x:'a'}");
+			table.update("{_id:'334'}", "{$set:{x:'a'}}");
 
-			JSONObject obj = table.findOne("{_id:334}");
+			JSONObject obj = table.findOne("{_id:'334'}");
 			assertTrue(obj.getString("x").equals("a"));
 
 			conn.dropTable("updateNESet");

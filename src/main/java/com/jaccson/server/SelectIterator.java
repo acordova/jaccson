@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.accumulo.core.client.BatchScanner;
+import org.apache.accumulo.core.client.IteratorSetting;
+import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.IteratorEnvironment;
@@ -18,7 +21,7 @@ import org.apache.accumulo.core.iterators.WrappingIterator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.jaccson.JSONHelper;
+import com.jaccson.IterStack;
 import com.jaccson.SelectFilter;
 
 /**
@@ -26,46 +29,57 @@ import com.jaccson.SelectFilter;
  * out entire JSON object, rather this filter suppresses unselected fields within each 
  * JSON object
  * 
+ * This also is intended to only be used at scan time to avoid shipping all fields to
+ * the client
+ * 
  * @author aaron
  *
  */
 public class SelectIterator  extends WrappingIterator implements OptionDescriber {
-	
-	JSONObject filter;
 
+	JSONObject select;
 	//private static final Logger log = Logger.getLogger(IteratorUtil.class);
 
 
 	public SelectIterator() {}
 
+	@Override
+	public void init(SortedKeyValueIterator<Key,Value> source, Map<String,String> options, IteratorEnvironment env) throws IOException {
+		super.init(source, options, env);
+		try {
+			select = new JSONObject(options.get("select"));
+		} catch (JSONException e) {
+			throw new IOException(e);
+		}
+	}
+
 	public SelectIterator(SortedKeyValueIterator<Key,Value> iterator) throws IOException {
 		this.setSource(iterator);
-
 	}
 
 
 	public Value getTopValue() {
-		
+
 		Value v = super.getTopValue();
-		
+
 		JSONObject selected;
-		
+
 		try {
 			JSONObject vo = new JSONObject(new String(v.get()));
-			
+
 			// perform select
-			selected = SelectFilter.select(vo, filter);
-			
+			selected = SelectFilter.select(vo, select);
+
 			return new Value(selected.toString().getBytes());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 		return v;
 	}
-	
 
-	 
+
+
 	private static Map<String,Map<String,String>> parseOptions(Map<String,String> options) {
 		HashMap<String,String> namesToClasses = new HashMap<String,String>();
 		HashMap<String,Map<String,String>> namesToOptions = new HashMap<String,Map<String,String>>();
@@ -113,20 +127,39 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 	 * 
 	 * return new IteratorOptions(name, options); } 
 	 */ 
-	 
 
-	//@Override
+
+	@Override
 	public IteratorOptions describeOptions() {
-		return new IteratorOptions("filter", "JASelectFilter creates JSON subdocuments based on JSON 'select' documents", null,
+		return new IteratorOptions("select", "SelectIterator creates JSON subdocuments based on JSON 'select' documents", null,
 				Collections.singletonList("<select JSON document>"));
 	}
 
-	//@Override
+	@Override
 	public boolean validateOptions(Map<String,String> options) {
 		parseOptions(options);
 		return true;
 	}
 
+	// called from client side
+	public static void setSelect(IteratorSetting cfg, String select) {
+		cfg.addOption("select", select);
+	}
 
+	public static void setSelectOnScanner(Scanner scanner, JSONObject select) {
+		IteratorSetting selectIterSetting = new IteratorSetting(IterStack.SELECT_ITERATOR_PRI, "jaccsonSelecter", "com.jaccson.server.SelectIterator");
+		SelectIterator.setSelect(selectIterSetting, select.toString());
+		scanner.addScanIterator(selectIterSetting);
+	}
+
+	public static void setSelectOnScanner(BatchScanner bscan, JSONObject select) {
+		IteratorSetting selectIterSetting = new IteratorSetting(IterStack.SELECT_ITERATOR_PRI, "jaccsonSelecter", "com.jaccson.server.SelectIterator");
+		SelectIterator.setSelect(selectIterSetting, select.toString());
+		bscan.addScanIterator(selectIterSetting);
+	}
+
+	public static void removeSelectOnScanner(Scanner scanner) {
+		scanner.removeScanIterator("jaccsonSelecter");
+	}
 }
 

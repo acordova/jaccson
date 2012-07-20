@@ -26,6 +26,8 @@ public class FilteredJSONIterator implements Iterator<JSONObject>, Iterable<JSON
 	public FilteredJSONIterator(Iterator<Entry<Key,Value>> iter, JSONObject filter) {
 		this.filter = filter;
 		this.iter = iter;
+		
+		advanceIter();
 	}
 
 	@Override
@@ -36,10 +38,10 @@ public class FilteredJSONIterator implements Iterator<JSONObject>, Iterable<JSON
 	@Override
 	public boolean hasNext() {
 
-		if(spent) return false;
+		//if(spent) return false;
 		
-		if(nextMatch == null)
-			advanceIter();
+		//if(nextMatch == null)
+		//	advanceIter();
 			
 		return !spent;
 	}
@@ -62,17 +64,17 @@ public class FilteredJSONIterator implements Iterator<JSONObject>, Iterable<JSON
 		
 		// scan for next matching object
 		// this is the part some people would want to do at the tablet server
-		nextMatch = JSONHelper.objectForKeyValue(iter.next());
-		while(!satisfiesFilter(nextMatch)) {
+		nextMatch = JSONHelper.objectForEntry(iter.next());
+		while(!satisfiesFilter(nextMatch, filter)) {
 			if(!iter.hasNext()) {
 				spent = true;
 				return;
 			}
-			nextMatch = JSONHelper.objectForKeyValue(iter.next());
+			nextMatch = JSONHelper.objectForEntry(iter.next());
 		}
 	}
 	
-	private boolean satisfiesFilter(JSONObject o) {
+	public static boolean satisfiesFilter(JSONObject o, JSONObject filter) {
 		
 		for(String n : JSONObject.getNames(filter)) {
 			try {

@@ -16,6 +16,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.jaccson.server.SelectIterator;
+import com.jaccson.server.TableScanIterator;
+
 /**
  * this class designed to grab a batches from a set of indexes
  * 
@@ -50,16 +53,29 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 			}
 		}
 		
+		// no clauses are indexed
+		
+		
+		// some clauses are indexed
+		
+		
+		// all clauses are indexed
+		
+		
 		if(iters.size() > 0) {
 			usingIndexes = true;
 		}
 		
 		if(iters.size() == 1) {
-			indexesIter = new RowIDBatchIter(iters.get(0));	
+			indexesIter = new RowIDBatchIter(iters.get(0));
 		} 
 		else { 
 			indexesIter = new AndIters(iters);
 		}
+	}
+	
+	public void setFilter(JSONObject filter) {
+		SelectIterator.setSelectOnScanner(bscan, filter);
 	}
 	
 	public JSONObject getUnindexedClauses() {

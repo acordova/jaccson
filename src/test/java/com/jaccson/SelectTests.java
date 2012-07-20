@@ -5,6 +5,13 @@ import org.json.JSONObject;
 
 import junit.framework.TestCase;
 
+/**
+ * these test the SelectFilter functionality by itself, 
+ * not deployed in the server and not through the client API
+ * 
+ * @author aaron
+ *
+ */
 public class SelectTests extends TestCase {
 
 	public void testSelectSimple() {
@@ -95,6 +102,36 @@ public class SelectTests extends TestCase {
 
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+	}
+	
+	public void testTwoAssymetric() {
+		try {
+			JSONObject o = new JSONObject("{books:[{author:'bob',price:50,copies:12},{author:'george',price:40}]}");
+
+			JSONObject selected = SelectFilter.select(o, new JSONObject("{books.author:1, books.copies:1}"));
+
+			assertTrue(selected.toString().equals("{\"books\":[{\"author\":\"bob\",\"copies\":12},{\"author\":\"george\"}]}"));
+
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			assertTrue(false);
+		}
+	}
+	
+	public void testTwoTotallyAssymetric() {
+		try {
+			JSONObject o = new JSONObject("{books:[{author:'bob',price:50,copies:12},{writer:'george',cost:40}]}");
+
+			JSONObject selected = SelectFilter.select(o, new JSONObject("{books.author:1, books.copies:1}"));
+
+			// mongo does this - leaves an empty object in an array
+			assertTrue(selected.toString().equals("{\"books\":[{\"author\":\"bob\",\"copies\":12},{}]}"));
+
+		} catch (JSONException e) {
 			e.printStackTrace();
 			assertTrue(false);
 		}

@@ -17,15 +17,27 @@ public class SelectFilter {
 		return selected;
 	}
 
-	public static Object subObjectForPath(String path, Object o, Object sub) {
+	private static Object subObjectForPath(String path, Object o, Object sub) {
 
 		if(o instanceof JSONArray) {
 			JSONArray oa = (JSONArray)o;
-			JSONArray subArray = new JSONArray();
+			JSONArray subArray = (JSONArray)sub;
 
 			for(int i=0; i < oa.length(); i++) {
 				try {
-					subArray.put(subObjectForPath(path, oa.get(i), sub));
+					Object inner = oa.get(i);
+					if(inner instanceof JSONObject) {
+						if(i >= subArray.length())
+							subArray.put(subObjectForPath(path, inner, new JSONObject()));
+						else
+							subObjectForPath(path, inner, subArray.get(i));
+					}
+					else {
+						if(i >= subArray.length())
+							subArray.put(subObjectForPath(path, inner, new JSONArray()));
+						else
+							subObjectForPath(path, inner, subArray.get(i));
+					}
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -72,4 +84,5 @@ public class SelectFilter {
 			return sub;
 		}
 	}
+
 }

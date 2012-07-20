@@ -11,10 +11,15 @@ import org.json.JSONObject;
 
 public class JSONHelper {
 
-	public static JSONObject objectForKeyValue(Entry<Key,Value> pair) {
+	// used for deserializing key value pairs from tables into JSONObjects
+	public static JSONObject objectForEntry(Entry<Key,Value> pair) {
+		return objectForKeyValue(pair.getKey(), pair.getValue());
+	}
+	
+	public static JSONObject objectForKeyValue(Key k, Value v) {
 		JSONObject o = null;
 		try {
-			o = new JSONObject(new String(pair.getValue().get()));
+			o = new JSONObject(new String(v.get()));
 		} catch (JSONException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -22,7 +27,7 @@ public class JSONHelper {
 		
 		// add key 
 		try {
-			o.put("_id", pair.getKey().getRow().toString());
+			o.put("_id", k.getRow().toString());
 		} catch (JSONException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -30,6 +35,7 @@ public class JSONHelper {
 		
 		return o;
 	}
+	
 	
 	// TODO: does this need to handle arrays ? 
 	public static JSONObject innerMostObjectForPath(String path, JSONObject object) throws JSONException {

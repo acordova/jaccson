@@ -372,6 +372,10 @@ public class JaccsonUpdater extends Combiner {
 			case $delete: {
 				finalObj = null;
 			}
+			case $each: {
+				// TODO: implement
+				break;
+			}
 			}
 		}
 
