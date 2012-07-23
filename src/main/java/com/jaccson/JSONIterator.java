@@ -1,8 +1,3 @@
-/**
- * This is a simple class that converts KeyValue pairs into JSONObjects
- * This is used for index scanners or full table scans with no filtering
- * 
- */
 package com.jaccson;
 
 import java.util.Iterator;
@@ -12,6 +7,12 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.json.JSONObject;
 
+/**
+ * convert an iterator of key-value pairs into an iterator of json objects
+ * 
+ * @author aaron
+ *
+ */
 public class JSONIterator implements Iterator<JSONObject> {
 
 	private Iterator<Entry<Key, Value>> iter;

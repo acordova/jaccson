@@ -22,12 +22,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.jaccson.IterStack;
-import com.jaccson.SelectFilter;
 
 /**
- * note that this doesn't work like an Accumulo filter, which in our case would filter
- * out entire JSON object, rather this filter suppresses unselected fields within each 
- * JSON object
+ * This selects subdocuments from JSON docs
  * 
  * This also is intended to only be used at scan time to avoid shipping all fields to
  * the client

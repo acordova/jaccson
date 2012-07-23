@@ -3,6 +3,8 @@ package com.jaccson;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.jaccson.server.SelectFilter;
+
 import junit.framework.TestCase;
 
 /**

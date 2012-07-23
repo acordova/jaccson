@@ -1,6 +1,7 @@
 package com.jaccson;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -16,8 +17,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.jaccson.server.QueryFilter;
 import com.jaccson.server.SelectIterator;
-import com.jaccson.server.TableScanIterator;
 
 /**
  * this class designed to grab a batches from a set of indexes
@@ -29,62 +30,38 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 
 	private BatchScanner bscan;
 	private JaccsonTable table;
-	private Iterator<Entry<Key,Value>> currentIter = null;
 	private Iterator<List<Range>> indexesIter; 
-	private JSONObject unindexedClauses = null;
-	private boolean usingIndexes = false; 
+	private Iterator<Entry<Key,Value>> currentIter = null; 
 	
-	public IndexScanner(JSONObject query, JaccsonTable table) throws TableNotFoundException, JSONException {
+	public IndexScanner(HashMap<String, JSONObject> indexedClauses, JSONObject unindexedClauses, JSONObject select, JaccsonTable table) throws TableNotFoundException, JSONException {
 		
 		this.table = table;
 		this.bscan = table.batchScanner();
 		
-		
+		// get unindexedClauses
 		ArrayList<Iterator<Entry<Key,Value>>> iters = new ArrayList<Iterator<Entry<Key,Value>>>();
-		for(String name : JSONObject.getNames(query)) {
-			if(table.isIndexed(name)) {
-				Iterator<Entry<Key,Value>> i = iterForExpression(name, query.get(name));
-				iters.add(i);
-			}
-			else { 
-				if(unindexedClauses == null)
-					unindexedClauses = new JSONObject();
-				unindexedClauses.put(name, query.get(name));
-			}
-		}
 		
-		// no clauses are indexed
-		
-		
-		// some clauses are indexed
-		
-		
-		// all clauses are indexed
-		
-		
-		if(iters.size() > 0) {
-			usingIndexes = true;
+		for(Entry<String,JSONObject> clause : indexedClauses.entrySet()) {
+			Iterator<Entry<Key,Value>> i = iterForExpression(clause.getKey(), clause.getValue());
+			iters.add(i);
 		}
 		
 		if(iters.size() == 1) {
 			indexesIter = new RowIDBatchIter(iters.get(0));
-		} 
+		}
 		else { 
 			indexesIter = new AndIters(iters);
 		}
+		
+		if(unindexedClauses != null) {
+			QueryFilter.setFilterOnScanner(bscan, unindexedClauses);
+		}
+		
+		if(select != null) {
+			SelectIterator.setSelectOnScanner(bscan, select);
+		}
 	}
 	
-	public void setFilter(JSONObject filter) {
-		SelectIterator.setSelectOnScanner(bscan, filter);
-	}
-	
-	public JSONObject getUnindexedClauses() {
-		return unindexedClauses;
-	}
-	
-	public boolean isUsingIndexes() {
-		return usingIndexes;
-	}
 	
 	public boolean hasNext() {
 		
