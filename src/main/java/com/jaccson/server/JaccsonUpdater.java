@@ -280,7 +280,24 @@ public class JaccsonUpdater extends Combiner {
 	public static JSONObject increment(JSONObject object, JSONObject finalObj) {
 
 		if(finalObj == null) {
-			return object;
+			try {
+				// may need to create subobjects
+				JSONObject o = new JSONObject();
+				JSONObject sub = o;
+			
+				for(String name : JSONObject.getNames(object)[0].split("\\.")) {
+					JSONObject inner = new JSONObject();
+					sub.put(name, inner);
+					sub = inner;
+				}
+				
+				return o;
+				
+			} catch(JSONException je) {
+				
+			}
+			
+			return null;
 		}
 
 		String path = (String) object.keys().next();
@@ -311,6 +328,8 @@ public class JaccsonUpdater extends Combiner {
 
 			String op = keyIter.next().toString();
 
+			log.info("applying update " + op + " to object " + finalObj);
+			
 			operator x;
 			try {
 				x = operator.valueOf(op);

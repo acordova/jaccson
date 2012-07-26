@@ -28,7 +28,7 @@ public class BasicTests extends TestCase {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 	
@@ -52,7 +52,7 @@ public class BasicTests extends TestCase {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 
@@ -75,7 +75,7 @@ public class BasicTests extends TestCase {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 	
@@ -104,7 +104,7 @@ public class BasicTests extends TestCase {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		}
 	}*/
 	
@@ -164,7 +164,7 @@ public class BasicTests extends TestCase {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 
@@ -187,7 +187,7 @@ public class BasicTests extends TestCase {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 
@@ -225,7 +225,7 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 
@@ -238,7 +238,7 @@ public class BasicTests extends TestCase {
 		JaccsonCursor cursor = table.find("{planes.fuel: 40}", "");
 		int count = 0;
 		for(JSONObject o : cursor) {
-			System.out.println();
+			System.out.println(o);
 			count++;
 		}
 
@@ -253,16 +253,14 @@ public class BasicTests extends TestCase {
 			conn.dropTable("indexArray");
 			JaccsonTable table = conn.getTable("indexArray");
 			
-			table.ensureIndex("{planes.model.fuel:1}");
+			table.ensureIndex("{planes.fuel:1}");
 			insertQueryArray(table);
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		}
-
-		assertTrue(false);
 	}
 
 
@@ -274,18 +272,20 @@ public class BasicTests extends TestCase {
 			conn = new JaccsonConnection("localhost", "acc", "root", "secret", "");
 
 
-			conn.dropTable("updateInc");
-			JaccsonTable table = conn.getTable("updateInc");
+			conn.dropTable("updateNEInc");
+			JaccsonTable table = conn.getTable("updateNEInc");
 
 			// test with no previous object
-			table.update("{_id:333}", "{newfield:1}");
+			table.update("{_id:333}", "{$inc:{newfield:1}}");
 			JSONObject obj = table.findOne("{_id:333}");
+			table.drop();
+			
 			assertTrue(obj.getInt("newfield") == 1);
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 
@@ -330,7 +330,7 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 
@@ -345,7 +345,7 @@ public class BasicTests extends TestCase {
 
 			table.insert("{_id:'334', x:5}");
 
-			table.update("{_id:'334'}", "{$set:{x:'a'}");
+			table.update("{_id:'334'}", "{$set:{x:'a'}}");
 
 			JSONObject obj = table.findOne("{_id:'334'}");
 			assertTrue(obj.getString("x").equals("a"));
@@ -355,7 +355,7 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 
@@ -380,7 +380,7 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 	}
 
@@ -405,10 +405,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		}
 		
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdatePush() {
@@ -418,10 +418,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		}
 		
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdatePushAll() {
@@ -431,10 +431,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		}
 		
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdateAddToSet() {
@@ -444,10 +444,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		}
 		
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdateEach() {
@@ -457,10 +457,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		}
 		
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdatePop() {
@@ -470,10 +470,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		}
 		
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdatePull() {
@@ -483,10 +483,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdatePullAll() {
@@ -496,10 +496,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdateRename() {
@@ -509,11 +509,11 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 
 
-		assertTrue(false);
+		fail();
 	}
 
 	public void testUpdateBit() {
@@ -523,10 +523,10 @@ public class BasicTests extends TestCase {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			assertTrue(false);
+			fail();
 		} 
 
-		assertTrue(false);
+		fail();
 	}
 }
 

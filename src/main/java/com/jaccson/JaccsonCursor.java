@@ -18,7 +18,6 @@ public class JaccsonCursor implements Iterable<JSONObject>, Iterator<JSONObject>
 	
 	public JaccsonCursor(JaccsonTable table, JSONObject query, JSONObject select) throws TableNotFoundException, JSONException {
 
-		
 		// no query
 		if(query == null || query.length() == 0 || query.toString().equals("{}")) {
 			
@@ -34,7 +33,7 @@ public class JaccsonCursor implements Iterable<JSONObject>, Iterator<JSONObject>
 		else {
 			
 			// figure out which clauses can use an index			
-			HashMap<String, JSONObject> indexedClauses = new HashMap<String, JSONObject>();
+			HashMap<String, Object> indexedClauses = new HashMap<String, Object>();
 			JSONObject unindexedClauses = new JSONObject();
 			
 			for(String name : JSONObject.getNames(query)) {
@@ -42,7 +41,7 @@ public class JaccsonCursor implements Iterable<JSONObject>, Iterator<JSONObject>
 					unindexedClauses.put(name, query.get(name));
 				}
 				else {
-					indexedClauses.put(name, (JSONObject)query.get(name));
+					indexedClauses.put(name, query.get(name));
 				}
 			}
 			

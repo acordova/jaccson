@@ -486,8 +486,6 @@ public class JaccsonTable {
 	
 	public JaccsonCursor find(JSONObject query, JSONObject select) throws TableNotFoundException, JSONException {
 
-		// TODO: shortcut queries of the form {_id:x}
-		
 		// provides consistency from this client's point of view
 		if(dirty)
 			flush();
@@ -495,11 +493,11 @@ public class JaccsonTable {
 		return new JaccsonCursor(this, query, select);
 	}
 
-	public JSONObject findOne(String query) throws JSONException {
+	public JSONObject findOne(String query) throws JSONException, TableNotFoundException {
 		return findOne(query, null);
 	}
 	
-	public JSONObject findOne(String query, String select) throws JSONException {
+	public JSONObject findOne(String query, String select) throws JSONException, TableNotFoundException {
 		if(select == null) {
 			return findOne(new JSONObject(query), null);
 		}
@@ -508,23 +506,23 @@ public class JaccsonTable {
 		}
 	}
 
-	public JSONObject findOne(JSONObject query, JSONObject select) throws JSONException {
+	public JSONObject findOne(JSONObject query) throws JSONException, TableNotFoundException {
+		return findOne(query, null);
+	}
+	
+	public JSONObject findOne(JSONObject query, JSONObject select) throws JSONException, TableNotFoundException {
 
-		if(dirty)
-			flush();
-
-		JaccsonCursor cursor;
-		try {
-			cursor = new JaccsonCursor(this, query, select);
-
-			if(!cursor.hasNext())
-				return null;
-
-			return cursor.next();
-
-		} catch (TableNotFoundException e) {
-			return null;
+		// findOne({"_id:x"}) is the same as get(x)
+		
+		if(query != null && query.length() == 1 && query.get("_id") != null) {
+			return get(query.getString("_id"));
 		}
+		
+		JaccsonCursor cursor = find(query, select);
+		if(!cursor.hasNext())
+			return null;
+		
+		return cursor.next();
 	}
 
 	public JSONObject get(String rowid) throws JSONException {
@@ -607,6 +605,8 @@ public class JaccsonTable {
 			// check that index doesn't already exist
 			if(metadata.getIndexedKeys(tableName).contains(key)) 
 				return;
+			
+			// TODO: should also disallow building indexes on _id
 
 			getWritersReaders();
 

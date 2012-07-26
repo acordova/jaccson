@@ -33,7 +33,7 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 	private Iterator<List<Range>> indexesIter; 
 	private Iterator<Entry<Key,Value>> currentIter = null; 
 	
-	public IndexScanner(HashMap<String, JSONObject> indexedClauses, JSONObject unindexedClauses, JSONObject select, JaccsonTable table) throws TableNotFoundException, JSONException {
+	public IndexScanner(HashMap<String, Object> indexedClauses, JSONObject unindexedClauses, JSONObject select, JaccsonTable table) throws TableNotFoundException, JSONException {
 		
 		this.table = table;
 		this.bscan = table.batchScanner();
@@ -41,7 +41,7 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 		// get unindexedClauses
 		ArrayList<Iterator<Entry<Key,Value>>> iters = new ArrayList<Iterator<Entry<Key,Value>>>();
 		
-		for(Entry<String,JSONObject> clause : indexedClauses.entrySet()) {
+		for(Entry<String,Object> clause : indexedClauses.entrySet()) {
 			Iterator<Entry<Key,Value>> i = iterForExpression(clause.getKey(), clause.getValue());
 			iters.add(i);
 		}
@@ -53,11 +53,11 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 			indexesIter = new AndIters(iters);
 		}
 		
-		if(unindexedClauses != null) {
+		if(unindexedClauses != null && unindexedClauses.length() > 0) {
 			QueryFilter.setFilterOnScanner(bscan, unindexedClauses);
 		}
 		
-		if(select != null) {
+		if(select != null && select.length() > 0) {
 			SelectIterator.setSelectOnScanner(bscan, select);
 		}
 	}
