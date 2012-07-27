@@ -1,4 +1,4 @@
-package com.jaccson;
+package com.jaccson.mongo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,12 +13,11 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.jaccson.server.QueryFilter;
 import com.jaccson.server.SelectIterator;
+import com.mongodb.BasicDBList;
+import com.mongodb.DBObject;
 
 /**
  * this class designed to grab a batches from a set of indexes
@@ -29,14 +28,14 @@ import com.jaccson.server.SelectIterator;
 public class IndexScanner implements Iterator<Entry<Key,Value>> {
 
 	private BatchScanner bscan;
-	private JaccsonTable table;
+	private DBCollection coll;
 	private Iterator<List<Range>> indexesIter; 
 	private Iterator<Entry<Key,Value>> currentIter = null; 
 	
-	public IndexScanner(HashMap<String, Object> indexedClauses, JSONObject unindexedClauses, JSONObject select, JaccsonTable table) throws TableNotFoundException, JSONException {
+	public IndexScanner(HashMap<String, Object> indexedClauses, DBObject unindexedClauses, DBObject select, DBCollection coll) throws TableNotFoundException {
 		
-		this.table = table;
-		this.bscan = table.batchScanner();
+		this.coll = coll;
+		this.bscan = coll.batchScanner();
 		
 		// get unindexedClauses
 		ArrayList<Iterator<Entry<Key,Value>>> iters = new ArrayList<Iterator<Entry<Key,Value>>>();
@@ -53,11 +52,11 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 			indexesIter = new AndIters(iters);
 		}
 		
-		if(unindexedClauses != null && unindexedClauses.length() > 0) {
+		if(unindexedClauses != null && unindexedClauses.keySet().size() > 0) {
 			QueryFilter.setFilterOnScanner(bscan, unindexedClauses);
 		}
 		
-		if(select != null && select.length() > 0) {
+		if(select != null && select.keySet().size() > 0) {
 			SelectIterator.setSelectOnScanner(bscan, select);
 		}
 	}
@@ -89,20 +88,20 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 
 	public void remove() {}
 
-	private Iterator<Entry<Key,Value>> iterForExpression(String field, Object value) throws TableNotFoundException, JSONException {
+	private Iterator<Entry<Key,Value>> iterForExpression(String field, Object value) throws TableNotFoundException {
 		
-		if(value instanceof JSONObject) { // some op other than eq
+		if(value instanceof DBObject) { // some op other than eq
 			
-			JSONObject obj = (JSONObject)value;
+			DBObject obj = (DBObject)value;
 			
 			// get inner value
-			String op = JSONObject.getNames(obj)[0];
+			String op = obj.keySet().iterator().next();
 			Object ival = obj.get(op);
 			
 			// TODO: add gte and lte
 			if(op.equals("$gt")) {
 				byte[] bytes = IndexHelper.indexValueForObject(ival);
-				Scanner iscan = table.indexScannerForKey(field);
+				Scanner iscan = coll.indexScannerForKey(field);
 				iscan.setRange(new Range(new Text(bytes), false, null, true));
 				
 				return iscan.iterator();
@@ -110,32 +109,32 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 			} else if(op.equals("$lt")) {
 				byte[] bytes = IndexHelper.indexValueForObject(ival);
 
-				Scanner iscan = table.indexScannerForKey(field);
+				Scanner iscan = coll.indexScannerForKey(field);
 				iscan.setRange(new Range(null, true, new Text(bytes), false));
 				
 				return iscan.iterator();
 				
 			} else if(op.equals("$between")) {
 				// expect a JSON Array next
-				JSONArray ar = (JSONArray)ival;
+				BasicDBList ar = (BasicDBList)ival;
 				
 				byte[] bytesStart = IndexHelper.indexValueForObject(ar.get(0));
 				byte[] bytesEnd = IndexHelper.indexValueForObject(ar.get(1));
 				
-				Scanner iscan = table.indexScannerForKey(field);
+				Scanner iscan = coll.indexScannerForKey(field);
 				iscan.setRange(new Range(new Text(bytesStart), true, new Text(bytesEnd), true));
 				
 				return iscan.iterator();
 				
 			} else if(op.equals("$in")) {
-				JSONArray ar = (JSONArray)ival;
+				BasicDBList ar = (BasicDBList)ival;
 				ArrayList<Range> ranges = new ArrayList<Range>();
 				
-				for(int i=0; i < ar.length(); i++) {
+				for(int i=0; i < ar.size(); i++) {
 					ranges.add(new Range(new Text(IndexHelper.indexValueForObject(ar.get(i)))));
 				}
 				
-				BatchScanner biscan = table.batchScannerForKey(field);
+				BatchScanner biscan = coll.batchScannerForKey(field);
 				biscan.setRanges(ranges);
 				return biscan.iterator();
 			}
@@ -143,7 +142,7 @@ public class IndexScanner implements Iterator<Entry<Key,Value>> {
 		// equality
 		} else if(value instanceof Integer || value instanceof Double || value instanceof String) {
 			
-			Scanner iscan = table.indexScannerForKey(field);
+			Scanner iscan = coll.indexScannerForKey(field);
 			iscan.setRange(new Range(new Text(IndexHelper.indexValueForObject(value))));
 			
 			return iscan.iterator();

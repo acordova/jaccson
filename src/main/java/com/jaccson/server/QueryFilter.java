@@ -11,12 +11,12 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.Filter;
 import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import com.jaccson.IterStack;
-import com.jaccson.JSONHelper;
+import com.jaccson.mongo.BSONHelper;
+import com.jaccson.mongo.IterStack;
+import com.mongodb.BasicDBList;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 /**
  * This class is used to filter documents based on a clause when no indexes are available,
@@ -27,23 +27,20 @@ import com.jaccson.JSONHelper;
  */
 public class QueryFilter extends Filter {
 
-	JSONObject filter;
+	DBObject filter;
 
 	@Override
 	public boolean accept(Key k, Value v) {
 
-		JSONObject o = JSONHelper.objectForKeyValue(k, v);
+		DBObject o = BSONHelper.objectForKeyValue(k, v);
 		return satisfiesFilter(o, filter);
 	}
 
 	@Override
 	public void init(SortedKeyValueIterator<Key,Value> source, Map<String,String> options, IteratorEnvironment env) throws IOException {
 		super.init(source, options, env);
-		try {
-			filter = new JSONObject(options.get("filter"));
-		} catch (JSONException e) {
-			throw new IOException(e);
-		}
+		
+		filter = (DBObject) JSON.parse(options.get("filter"));
 	}
 
 	@Override
@@ -62,7 +59,7 @@ public class QueryFilter extends Filter {
 	}
 
 
-	public static void setFilterOnScanner(Scanner scanner, JSONObject filter) {
+	public static void setFilterOnScanner(Scanner scanner, DBObject filter) {
 		IteratorSetting filterIterSetting = new IteratorSetting(IterStack.FILTER_ITERATOR_PRI, "jaccsonFilter", "com.jaccson.server.QueryFilter");
 		QueryFilter.setFilter(filterIterSetting, filter.toString());
 		scanner.addScanIterator(filterIterSetting);
@@ -72,42 +69,39 @@ public class QueryFilter extends Filter {
 		filterIterSetting.addOption("filter", filter);
 	}
 
-	public static void setFilterOnScanner(BatchScanner bscan, JSONObject filter) {
+	public static void setFilterOnScanner(BatchScanner bscan, DBObject filter) {
 		IteratorSetting filterIterSetting = new IteratorSetting(IterStack.FILTER_ITERATOR_PRI, "jaccsonFilter", "com.jaccson.server.QueryFilter");
 		QueryFilter.setFilter(filterIterSetting, filter.toString());
 		bscan.addScanIterator(filterIterSetting);
 	}
 
-	public static boolean satisfiesFilter(JSONObject o, JSONObject filter) {
+	public static boolean satisfiesFilter(DBObject o, DBObject filter) {
 
-		for(String n : JSONObject.getNames(filter)) {
-			try {
-				// make this an array, one of which can satisfy the filter?
-				Object value = JSONHelper.valueForPath(n, o);
+		for(String n : filter.keySet()) {
+			// make this an array, one of which can satisfy the filter?
+			Object value = BSONHelper.valueForPath(n, o);
 
-				if(value == null)
-					return false;
-
-				if(!satisfiesClause(value, n, filter.get(n)))
-					return false;
-
-			} catch (JSONException e) { // field not found
-				//e.printStackTrace();
+			if(value == null)
 				return false;
-			}
+
+			if(!satisfiesClause(value, n, filter.get(n)))
+				return false;
 		}
 
 		return true;
 	}
 
-	private static boolean satisfiesClause(Object value, String field, Object clause) throws JSONException {
+	private static boolean satisfiesClause(Object value, String field, Object clause) {
 
-		if(clause instanceof JSONObject) { // some op other than eq
+		if(clause == null)
+			return false;
+		
+		if(clause instanceof DBObject) { // some op other than eq
 
-			JSONObject obj = (JSONObject)clause;
+			DBObject obj = (DBObject)clause;
 
 			// get inner value
-			String op = JSONObject.getNames(obj)[0];
+			String op = obj.keySet().iterator().next();
 			Object ival = obj.get(field);
 
 			// TODO: add gte and lte
@@ -135,7 +129,7 @@ public class QueryFilter extends Filter {
 
 			} else if(op.equals("$between")) {
 				// expect a JSON Array next
-				JSONArray ar = (JSONArray)ival;
+				BasicDBList ar = (BasicDBList)ival;
 
 				Object first = ar.get(0);
 				Object last = ar.get(1);
@@ -173,9 +167,9 @@ public class QueryFilter extends Filter {
 				}
 
 			} else if(op.equals("$in")) {
-				JSONArray ar = (JSONArray)ival;
+				BasicDBList ar = (BasicDBList)ival;
 
-				for(int i=0; i < ar.length(); i++) {
+				for(int i=0; i < ar.size(); i++) {
 					Object ivalo = ar.get(i);
 
 					if(ival instanceof Integer && ivalo instanceof Integer) {

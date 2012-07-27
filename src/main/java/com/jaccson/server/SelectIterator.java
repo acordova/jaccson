@@ -18,12 +18,15 @@ import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.OptionDescriber;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
 import org.apache.accumulo.core.iterators.WrappingIterator;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.bson.BSON;
+import org.mortbay.util.ajax.JSON;
 
-import com.jaccson.IterStack;
+
 import com.jaccson.JSONHelper;
+import com.jaccson.mongo.IterStack;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 /**
  * This selects subdocuments from JSON docs
@@ -36,7 +39,7 @@ import com.jaccson.JSONHelper;
  */
 public class SelectIterator  extends WrappingIterator implements OptionDescriber {
 
-	JSONObject select;
+	DBObject select;
 	//private static final Logger log = Logger.getLogger(IteratorUtil.class);
 
 
@@ -45,11 +48,8 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 	@Override
 	public void init(SortedKeyValueIterator<Key,Value> source, Map<String,String> options, IteratorEnvironment env) throws IOException {
 		super.init(source, options, env);
-		try {
-			select = new JSONObject(options.get("select"));
-		} catch (JSONException e) {
-			throw new IOException(e);
-		}
+
+		select = (DBObject) JSON.parse(options.get("select"));
 	}
 
 	public SelectIterator(SortedKeyValueIterator<Key,Value> iterator) throws IOException {
@@ -61,20 +61,14 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 
 		Value v = super.getTopValue();
 
-		JSONObject selected;
+		DBObject selected;
 
-		try {
-			JSONObject vo = new JSONObject(new String(v.get()));
+		DBObject vo = (DBObject) BSON.decode(v.get());
 
-			// perform select
-			selected = select(vo, select);
+		// perform select
+		selected = select(vo, select);
 
-			return new Value(selected.toString().getBytes());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		return v;
+		return new Value(selected.toString().getBytes());
 	}
 
 
@@ -145,13 +139,13 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 		cfg.addOption("select", select);
 	}
 
-	public static void setSelectOnScanner(Scanner scanner, JSONObject select) {
+	public static void setSelectOnScanner(Scanner scanner, DBObject select) {
 		IteratorSetting selectIterSetting = new IteratorSetting(IterStack.SELECT_ITERATOR_PRI, "jaccsonSelecter", "com.jaccson.server.SelectIterator");
 		SelectIterator.setSelect(selectIterSetting, select.toString());
 		scanner.addScanIterator(selectIterSetting);
 	}
 
-	public static void setSelectOnScanner(BatchScanner bscan, JSONObject select) {
+	public static void setSelectOnScanner(BatchScanner bscan, DBObject select) {
 		IteratorSetting selectIterSetting = new IteratorSetting(IterStack.SELECT_ITERATOR_PRI, "jaccsonSelecter", "com.jaccson.server.SelectIterator");
 		SelectIterator.setSelect(selectIterSetting, select.toString());
 		bscan.addScanIterator(selectIterSetting);
@@ -160,12 +154,12 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 	public static void removeSelectOnScanner(Scanner scanner) {
 		scanner.removeScanIterator("jaccsonSelecter");
 	}
-	
-	public static JSONObject select(JSONObject original, JSONObject filter) throws JSONException {
 
-		JSONObject selected = new JSONObject();
+	public static DBObject select(DBObject original, DBObject filter) {
 
-		for(String path : JSONObject.getNames(filter)) {
+		DBObject selected = new BasicDBObject();
+
+		for(String path : filter.keySet()) {
 			subObjectForPath(path, original, selected);
 		}
 
@@ -174,27 +168,24 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 
 	private static Object subObjectForPath(String path, Object o, Object sub) {
 
-		if(o instanceof JSONArray) {
-			JSONArray oa = (JSONArray)o;
-			JSONArray subArray = (JSONArray)sub;
+		if(o instanceof BasicDBList) {
+			BasicDBList oa = (BasicDBList)o;
+			BasicDBList subArray = (BasicDBList)sub;
 
-			for(int i=0; i < oa.length(); i++) {
-				try {
-					Object inner = oa.get(i);
-					if(inner instanceof JSONObject) {
-						if(i >= subArray.length())
-							subArray.put(subObjectForPath(path, inner, new JSONObject()));
-						else
-							subObjectForPath(path, inner, subArray.get(i));
-					}
-					else {
-						if(i >= subArray.length())
-							subArray.put(subObjectForPath(path, inner, new JSONArray()));
-						else
-							subObjectForPath(path, inner, subArray.get(i));
-					}
-				} catch (JSONException e) {
-					e.printStackTrace();
+			for(int i=0; i < oa.size(); i++) {
+
+				Object inner = oa.get(i);
+				if(inner instanceof DBObject) {
+					if(i >= subArray.size())
+						subArray.add(subObjectForPath(path, inner, new BasicDBObject()));
+					else
+						subObjectForPath(path, inner, subArray.get(i));
+				}
+				else {
+					if(i >= subArray.size())
+						subArray.add(subObjectForPath(path, inner, new BasicDBList()));
+					else
+						subObjectForPath(path, inner, subArray.get(i));
 				}
 			}
 
@@ -203,38 +194,33 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 		else {
 
 			// sub should be json object too
-			JSONObject subObj = (JSONObject)sub;
-			
+			DBObject subObj = (DBObject)sub;
+
 			String[] steps = path.split("\\.");
 
-			try {
-				if(steps.length == 1) { // base case
-					JSONObject jo = (JSONObject)o;
-					if(!jo.has(steps[0]))
-						return sub;
-					subObj.put(steps[0], jo.get(steps[0]));
+			if(steps.length == 1) { // base case
+				DBObject jo = (DBObject)o;
+				if(!jo.containsField(steps[0]))
 					return sub;
-				}
-
-				String subpath = JSONHelper.suffixPath(path);
-
-				// recurse
-				if(((JSONObject)o).has(steps[0])) {
-					if(subObj.has(steps[0])) {
-						subObj.put(steps[0], subObjectForPath(subpath, ((JSONObject)o).get(steps[0]), subObj.get(steps[0])));
-					}
-					else {
-						Object inner = ((JSONObject)o).get(steps[0]);
-						if(inner instanceof JSONObject)
-							subObj.put(steps[0], subObjectForPath(subpath, inner, new JSONObject()));
-						else
-							subObj.put(steps[0], subObjectForPath(subpath, inner, new JSONArray()));
-					}
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
+				subObj.put(steps[0], jo.get(steps[0]));
+				return sub;
 			}
 
+			String subpath = JSONHelper.suffixPath(path);
+
+			// recurse
+			if(((DBObject)o).containsField(steps[0])) {
+				if(subObj.containsField(steps[0])) {
+					subObj.put(steps[0], subObjectForPath(subpath, ((DBObject)o).get(steps[0]), subObj.get(steps[0])));
+				}
+				else {
+					Object inner = ((DBObject)o).get(steps[0]);
+					if(inner instanceof DBObject)
+						subObj.put(steps[0], subObjectForPath(subpath, inner, new BasicDBObject()));
+					else
+						subObj.put(steps[0], subObjectForPath(subpath, inner, new BasicDBList()));
+				}
+			}
 
 			return sub;
 		}

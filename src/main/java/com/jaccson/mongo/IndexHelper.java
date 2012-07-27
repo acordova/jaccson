@@ -1,4 +1,4 @@
-package com.jaccson;
+package com.jaccson.mongo;
 
 import java.nio.ByteBuffer;
 

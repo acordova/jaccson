@@ -8,6 +8,7 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.jaccson.mongo.IndexScanner;
 import com.jaccson.server.QueryFilter;
 import com.jaccson.server.SelectIterator;
 

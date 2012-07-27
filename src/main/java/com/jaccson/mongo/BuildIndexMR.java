@@ -1,4 +1,4 @@
-package com.jaccson;
+package com.jaccson.mongo;
 
 import java.util.HashSet;
 
@@ -24,9 +24,11 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.bson.BSON;
+
+
+import com.mongodb.BasicDBList;
+import com.mongodb.DBObject;
 
 
 
@@ -34,29 +36,25 @@ public class BuildIndexMR implements Tool {
 
 	public static class BIMapper extends Mapper<Key, Value, Text, Text> {
 
-		private void indexJSON(Object obj, String prefix, String rowid) throws JSONException, MutationsRejectedException {
+		private void indexJSON(Object obj, String prefix, String rowid) throws MutationsRejectedException {
 
-			if(obj instanceof JSONObject) {
+			if(obj instanceof DBObject) {
 				
-				JSONObject jobj = (JSONObject) obj;
-				
-				String[] names = JSONObject.getNames(jobj);
-				if(names == null)
-					return;
-				
-				for(String name : names) {
+				DBObject jobj = (DBObject) obj;
+
+				for(String name : jobj.keySet()) {
 					Object o = jobj.get(name);
 					
 					indexJSON(o, prefix + name + ".", rowid);
 				}
 			}
 			
-			else if (obj instanceof JSONArray) {
+			else if (obj instanceof BasicDBList) {
 				
-				JSONArray oarr = (JSONArray)obj;
+				BasicDBList oarr = (BasicDBList)obj;
 				
 				// index under the same name?
-				for(int i=0; i < oarr.length(); i++) {
+				for(int i=0; i < oarr.size(); i++) {
 					indexJSON(oarr.get(i), prefix, rowid);
 				}
 			}
@@ -131,13 +129,10 @@ public class BuildIndexMR implements Tool {
 		public void map(Key k, Value v, Context c) {
 			
 			try {
-				JSONObject obj = new JSONObject(new String(v.get()));
+				DBObject obj = (DBObject) BSON.decode(v.get());
 				
 				indexJSON(obj, "", k.getRow().toString());
 				
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (MutationsRejectedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

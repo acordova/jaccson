@@ -8,27 +8,25 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.Combiner;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.bson.BSON;
 
-import com.jaccson.JSONHelper;
+import com.jaccson.mongo.BSONHelper;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 
 public class JaccsonUpdater extends Combiner {
 
 	static final Logger log = Logger.getLogger(JaccsonUpdater.class);
-	
-	static JSONObject deleteMarker = null;
+
+	static DBObject deleteMarker = null;
 	{
-		try {
-			deleteMarker = new JSONObject("{$delete:1}");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		deleteMarker = (DBObject) JSON.parse("{$delete:1}");
 	}
-	
-	
+
+
 	public enum operator {
 		$inc, $set, $unset, $push, $pushAll,
 		$addToSet, $each, $pop, $pull, $pullAll, 
@@ -37,299 +35,251 @@ public class JaccsonUpdater extends Combiner {
 
 	// TODO: raise an error if an array is not found
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void pullAll(JSONObject object, JSONObject finalObj) {
-		
+	public static void pullAll(DBObject object, DBObject finalObj) {
+
 		if(finalObj == null) {
 			return;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-			JSONArray valuesToPullj = object.getJSONArray(path);
-			HashSet valuesToPull = new HashSet();
-			for(int i=0; i < valuesToPullj.length(); i++) {
-				valuesToPull.add(valuesToPullj.get(i));
-			}
-
-			JSONArray existingArray = o.getJSONArray(field);
-			JSONArray newArray = new JSONArray();
-
-			// filter out values to pull from array
-			for(int i=0; i < existingArray.length(); i++) {
-				Object value = existingArray.get(i);
-				if(valuesToPull.contains(value))
-					continue;
-
-				newArray.put(value);
-			}
-
-			// replace existing
-			o.put(field, newArray);
-
-		} catch (JSONException e) {
-			e.printStackTrace();
+		BasicDBList valuesToPullj = (BasicDBList)object.get(path);
+		HashSet valuesToPull = new HashSet();
+		for(int i=0; i < valuesToPullj.size(); i++) {
+			valuesToPull.add(valuesToPullj.get(i));
 		}
 
+		BasicDBList existingArray = (BasicDBList)o.get(field);
+		BasicDBList newArray = new BasicDBList();
+
+		// filter out values to pull from array
+		for(int i=0; i < existingArray.size(); i++) {
+			Object value = existingArray.get(i);
+			if(valuesToPull.contains(value))
+				continue;
+
+			newArray.add(value);
+		}
+
+		// replace existing
+		o.put(field, newArray);
 	}
 
 	// TODO: raise an error if an array is not found
 	// note: integer 1 and float 1.0 don't compare as equal ...
-	public static void pull(JSONObject object, JSONObject finalObj) {
+	public static void pull(DBObject object, DBObject finalObj) {
 
 		if(finalObj == null) {
 			return;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-			Object valueToPull = object.get(path);
+		Object valueToPull = object.get(path);
 
-			JSONArray existingArray = o.getJSONArray(field);
-			JSONArray newArray = new JSONArray();
+		BasicDBList existingArray = (BasicDBList)o.get(field);
+		BasicDBList newArray = new BasicDBList();
 
-			// filter out values to pull from array
-			for(int i=0; i < existingArray.length(); i++) {
-				Object value = existingArray.get(i);
+		// filter out values to pull from array
+		for(int i=0; i < existingArray.size(); i++) {
+			Object value = existingArray.get(i);
 
-				if(value.equals(valueToPull))
-					continue;		
+			if(value.equals(valueToPull))
+				continue;		
 
-				newArray.put(value);
-			}
-
-			// replace existing
-			o.put(field, newArray);
-
-		} catch (JSONException e) {
-			e.printStackTrace();
+			newArray.add(value);
 		}
+
+		// replace existing
+		o.put(field, newArray);
 
 	}
 
 	// TODO: raise an error if an array is not found
 	// TODO: support popping first element using -1
-	public static void pop(JSONObject object, JSONObject finalObj) {
-		
+	public static void pop(DBObject object, DBObject finalObj) {
+
 		if(finalObj == null) {
 			return;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-			JSONArray existingArray = o.getJSONArray(field);
-			JSONArray newArray = new JSONArray();
+		BasicDBList existingArray = (BasicDBList)o.get(field);
+		BasicDBList newArray = new BasicDBList();
 
-			// leave out the last
-			for(int i=0; i < existingArray.length()-1; i++) {
-				Object value = existingArray.get(i);
-				newArray.put(value);
-			}
-
-			// replace existing
-			o.put(field, newArray);
-
-		} catch (JSONException e) {
-			e.printStackTrace();
+		// leave out the last
+		for(int i=0; i < existingArray.size()-1; i++) {
+			Object value = existingArray.get(i);
+			newArray.add(value);
 		}
+
+		// replace existing
+		o.put(field, newArray);
 
 	}
 
 	// TODO: raise an error if an array is not found
 	// TODO: add $each support
-	public static JSONObject addToSet(JSONObject object, JSONObject finalObj) {
-		
+	public static DBObject addToSet(DBObject object, DBObject finalObj) {
+
 		if(finalObj == null) {
 			return object;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-			JSONArray objectsToAdd = object.getJSONArray(path);
-			JSONArray existingArray = o.getJSONArray(field);
-			JSONArray newArray = new JSONArray();
+		BasicDBList objectsToAdd = (BasicDBList)object.get(path);
+		BasicDBList existingArray = (BasicDBList)o.get(field);
+		BasicDBList newArray = new BasicDBList();
 
-			HashSet<Object> values = new HashSet<Object>();
-			for(int i=0; i < existingArray.length(); i++)
-				values.add(existingArray.get(i));
+		HashSet<Object> values = new HashSet<Object>();
+		for(int i=0; i < existingArray.size(); i++)
+			values.add(existingArray.get(i));
 
-			for(int i=0; i < objectsToAdd.length(); i++) 
-				values.add(objectsToAdd.get(i));
+		for(int i=0; i < objectsToAdd.size(); i++) 
+			values.add(objectsToAdd.get(i));
 
-			for(Object value : values)
-				newArray.put(value);
+		for(Object value : values)
+			newArray.add(value);
 
-			finalObj.remove(field);
-			finalObj.put(field, newArray);
+		finalObj.removeField(field);
+		finalObj.put(field, newArray);
 
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
 
 		return finalObj;
 	}
 
 	// TODO: raise an error if an array is not found
-	public static JSONObject pushAll(JSONObject object, JSONObject finalObj) {
-		
+	public static DBObject pushAll(DBObject object, DBObject finalObj) {
+
 		if(finalObj == null) {
 			return object;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-			JSONArray existingArray = o.getJSONArray(field);
-			JSONArray valuesToAdd = object.getJSONArray(path);
+		BasicDBList existingArray = (BasicDBList)o.get(field);
+		BasicDBList valuesToAdd = (BasicDBList)object.get(path);
 
-			for(int i=0; i < valuesToAdd.length(); i++) {
-				Object value = valuesToAdd.get(i);
+		for(int i=0; i < valuesToAdd.size(); i++) {
+			Object value = valuesToAdd.get(i);
 
-				existingArray.put(value);
-			}
-
-		} catch (JSONException e) {
-			e.printStackTrace();
+			existingArray.add(value);
 		}
 
 		return finalObj;
 	}
 
-	public static JSONObject push(JSONObject object, JSONObject finalObj) {
-		
+	public static DBObject push(DBObject object, DBObject finalObj) {
+
 		if(finalObj == null) {
 			return object;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
 
-			JSONArray existingArray = o.getJSONArray(field);
-			Object value = object.get(path);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-			existingArray.put(value);
+		BasicDBList existingArray = (BasicDBList) o.get(field);
+		Object value = object.get(path);
 
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		existingArray.add(value);
 
 		return finalObj;
 	}
 
-	public static void unset(JSONObject object, JSONObject finalObj) {
-		
+	public static void unset(DBObject object, DBObject finalObj) {
+
 		if(finalObj == null) {
 			return;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
 
-			o.remove(field);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		o.removeField(field);
 	}
 
-	public static JSONObject set(JSONObject object, JSONObject finalObj) {
-		
+	public static DBObject set(DBObject object, DBObject finalObj) {
+
 		if(finalObj == null) {
 			return object;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-			o.put(field, object.get(path));
+		o.put(field, object.get(path));
 
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
 
 		return finalObj;
 	}
 
-	public static JSONObject increment(JSONObject object, JSONObject finalObj) {
+	public static DBObject increment(DBObject object, DBObject finalObj) {
 
 		if(finalObj == null) {
-			try {
-				// may need to create subobjects
-				JSONObject o = new JSONObject();
-				JSONObject sub = o;
-			
-				for(String name : JSONObject.getNames(object)[0].split("\\.")) {
-					JSONObject inner = new JSONObject();
-					sub.put(name, inner);
-					sub = inner;
-				}
-				
-				return o;
-				
-			} catch(JSONException je) {
-				
+
+			// may need to create subobjects
+			DBObject o = new BasicDBObject();
+			DBObject sub = o;
+
+			for(String name : object.keySet().iterator().next().split("\\.")) {
+				DBObject inner = new BasicDBObject();
+				sub.put(name, inner);
+				sub = inner;
 			}
-			
-			return null;
+
+			return o;
 		}
 
-		String path = (String) object.keys().next();
+		String path = object.keySet().iterator().next();
 
-		try {
-			Integer amount = object.getInt(path);
+		Integer amount = (Integer) object.get(path);
 
-			JSONObject o = JSONHelper.innerMostObjectForPath(path, finalObj);
-			String field = JSONHelper.fieldFromPath(path);
+		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		String field = BSONHelper.fieldFromPath(path);
 
-			Integer i = o.getInt(field);
-			i += amount;
-			o.put(field, i);
+		Integer i = (Integer) o.get(field);
+		i += amount;
+		o.put(field, i);
 
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
 
 		return finalObj;
 	}
 
 
-	public static JSONObject applyUpdate(JSONObject update, JSONObject finalObj) throws JSONException {
+	public static DBObject applyUpdate(DBObject update, DBObject finalObj) {
 
-		@SuppressWarnings("rawtypes")
-		Iterator keyIter = update.keys();
+		Iterator<String> keyIter = update.keySet().iterator();
 		while(keyIter.hasNext()) {
 
-			String op = keyIter.next().toString();
+			String op = update.keySet().iterator().next();
 
 			log.info("applying update " + op + " to object " + finalObj);
-			
+
 			operator x;
 			try {
 				x = operator.valueOf(op);
@@ -339,53 +289,53 @@ public class JaccsonUpdater extends Combiner {
 				finalObj = update;
 				break;
 			}
-					
+
 			log.info(x.toString());
-			
+
 			// updates should contain at least one update operator ...		
 			switch(x) {
 			case $inc: { 
-				finalObj = increment((JSONObject)update.get(op), finalObj);
+				finalObj = increment((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $set: {
-				finalObj = set((JSONObject)update.get(op), finalObj);
+				finalObj = set((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $unset: {
-				unset((JSONObject)update.get(op), finalObj);
+				unset((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $push: {
-				finalObj = push((JSONObject)update.get(op), finalObj);
+				finalObj = push((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $pushAll: {
-				finalObj = pushAll((JSONObject)update.get(op), finalObj);
+				finalObj = pushAll((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $addToSet: {
-				finalObj = addToSet((JSONObject)update.get(op), finalObj);
+				finalObj = addToSet((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $pop: {
-				pop((JSONObject)update.get(op), finalObj);
+				pop((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $pull: {
-				pull((JSONObject)update.get(op), finalObj);
+				pull((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $pullAll: {
-				pullAll((JSONObject)update.get(op), finalObj);
+				pullAll((DBObject)update.get(op), finalObj);
 				break;
 			}
 			case $rename: {
-				//finalObj = rename((JSONObject)next.get(fieldName), finalObj);
+				//finalObj = rename((DBObject)next.get(fieldName), finalObj);
 				break;
 			}
 			case $bit: {
-				//bit((JSONObject)next.get(fieldName), finalObj);
+				//bit((DBObject)next.get(fieldName), finalObj);
 				break;
 			}
 			case $delete: {
@@ -404,25 +354,22 @@ public class JaccsonUpdater extends Combiner {
 	@Override
 	public Value reduce(Key key, Iterator<Value> iter) {
 
-		JSONObject finalObj = null; 
+		DBObject finalObj = null; 
 
 		// JaccsonTable inserts all mutations with reverse timestamps 
 		// so we can apply these as we read them
-		
+
 		// TODO: if we have only one complete doc, avoid serializing and deserializing again
 		while(iter.hasNext()) {
-			
+
 			try {
-				JSONObject next = new JSONObject(new String(iter.next().get()));
-				
+				DBObject next = (DBObject) BSON.decode(iter.next().get());
+
 				log.info(next.toString());
 				finalObj = applyUpdate(next, finalObj);
 
 			}
-			catch(JSONException je) {
-				// can happen if an array is not found, for example ...
-				log.info(je.getMessage());
-			}
+
 			catch (IllegalArgumentException iae) {
 				// TODO: handle this
 				log.info(iae.getMessage());
@@ -432,7 +379,7 @@ public class JaccsonUpdater extends Combiner {
 		if(finalObj == null) {
 			finalObj = deleteMarker;
 		}
-		
+
 		return new Value(finalObj.toString().getBytes());
 	}
 }

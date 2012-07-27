@@ -1,4 +1,4 @@
-package com.jaccson;
+package com.jaccson.mongo;
 
 /**
  * just a place to configure the ordering of iterators

@@ -2,6 +2,10 @@ package com.jaccson.mongo;
 
 import java.util.Set;
 
+import org.apache.accumulo.core.client.AccumuloException;
+import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.accumulo.core.client.TableNotFoundException;
+
 import com.mongodb.CommandResult;
 import com.mongodb.DBEncoder;
 import com.mongodb.DBObject;
@@ -12,9 +16,18 @@ import com.mongodb.WriteResult;
 
 public class DB {
 
-	public DBCollection createCollection(String name, DBObject options) {
-		// TODO Auto-generated method stub
-		return null;
+	String name;
+	Jaccson jaccson;
+
+
+	DB(String name, Jaccson jaccson) {
+		this.name = name;
+		this.jaccson = jaccson;
+	}
+	
+	public DBCollection createCollection(String coll, DBObject options) throws TableNotFoundException, AccumuloException, AccumuloSecurityException {
+
+		return new DBCollection(coll, this);
 	}
 
 	public CommandResult command(DBObject cmd) throws MongoException {
@@ -165,7 +178,7 @@ public class DB {
 	}
 
 	
-	public Mongo getMongo() {
+	public Jaccson getMongo() {
 		// TODO Auto-generated method stub
 		return null;
 	}

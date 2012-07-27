@@ -1,4 +1,4 @@
-package com.jaccson;
+package com.jaccson.mongo;
 
 import java.util.HashSet;
 import java.util.Map.Entry;
