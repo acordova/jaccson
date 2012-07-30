@@ -1,7 +1,5 @@
 package com.jaccson.mongo;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,23 +13,20 @@ import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.iterators.Combiner;
-import org.apache.accumulo.core.iterators.IteratorUtil;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ToolRunner;
 import org.bson.BSON;
 import org.bson.types.ObjectId;
+import org.mortbay.util.ajax.JSON;
 
 import com.jaccson.server.DeletedFilter;
 import com.jaccson.server.JaccsonUpdater;
@@ -73,7 +68,7 @@ public class DBCollection {
 	public DBCollection(String name, DB db) throws TableNotFoundException, AccumuloException, AccumuloSecurityException {
 		this.name = name;
 		this.db = db;
-		this.tableName = db.name + "." + name;
+		this.tableName = db.name + "_" + name;
 		this.conn = db.jaccson.conn;
 		this.auths = db.jaccson.auths;
 
@@ -85,46 +80,11 @@ public class DBCollection {
 		writeResult = new WriteResult(null, null);
 	}
 
-	private void createTable(String tableName) throws TableNotFoundException {
-		try {
-			conn.tableOperations().create(tableName);
-
-			// remove default versioning iterator
-			conn.tableOperations().removeIterator(tableName, "vers", EnumSet.allOf(IteratorUtil.IteratorScope.class));
-
-
-			// apply update iterator
-			IteratorSetting upiterset = new IteratorSetting(IterStack.UPDATER_ITERATOR_PRI, "jaccsonUpdater", "com.jaccson.server.JaccsonUpdater");
-
-			ArrayList<IteratorSetting.Column> cols = new ArrayList<IteratorSetting.Column>();
-			cols.add(new IteratorSetting.Column("BSON"));
-			Combiner.setColumns(upiterset, cols);
-			conn.tableOperations().attachIterator(tableName, upiterset);
-
-
-			// apply deleted filter
-			IteratorSetting deliterset = new IteratorSetting(IterStack.DELETED_ITERATOR_PRI, "jaccsonDeleter", "com.jaccson.server.DeletedFilter");
-			conn.tableOperations().attachIterator(tableName, deliterset);
-
-
-			// TODO: need to throw any of these?
-		} catch (AccumuloException e) {
-			e.printStackTrace();
-		} catch (AccumuloSecurityException e) {
-			e.printStackTrace();
-		} catch (TableExistsException e) {
-			e.printStackTrace();
-		}
-	}
 
 	private void getWritersReaders() throws TableNotFoundException {
 
 		if(writer != null)
 			return;
-
-		if(!conn.tableOperations().exists(tableName)) {
-			createTable(tableName);
-		}
 
 		writer = conn.createBatchWriter(tableName, 1000000L, 1000L, 10);
 		indexWriters = new HashMap<String,BatchWriter>();
@@ -281,20 +241,21 @@ public class DBCollection {
 			throw new MongoException(e.getLocalizedMessage());
 		}
 
+		Object objid = null;
 		String rowid = null;
 		if(obj.containsField("_id")) {
-			Object objid = obj.get("_id");
+			objid = obj.get("_id");
 
 			if(objid instanceof String)
 				rowid = (String)objid;
 			else if(objid instanceof ObjectId)
-				rowid = ((ObjectId)objid).toString();
+				rowid = ((ObjectId)objid).toString() + "_o";
 
 			obj.removeField("_id");
 		}
 		else {
 			// generate ID
-			rowid = UUID.randomUUID().toString();
+			rowid = new ObjectId().toString() + "_o"; //UUID.randomUUID().toString() + "_o";
 		}
 
 		Mutation m = new Mutation(rowid);
@@ -318,9 +279,8 @@ public class DBCollection {
 
 		dirty = true;
 
-		// put the rowID back
-		// note this becomes an ObjectId
-		obj.put("_id", new ObjectId(rowid));
+		// put the ID back
+		obj.put("_id", objid);
 
 		// TODO: update count
 
@@ -328,11 +288,16 @@ public class DBCollection {
 		return writeResult;
 	}
 
-
+	@SuppressWarnings("unchecked")
+	public WriteResult insert(String json) {
+		
+		return insert(new BasicDBObject((HashMap<String,Object>)JSON.parse(json)), null);
+	}
+	
 	public WriteResult insert(DBObject... arr) throws MongoException {
 
 		for(DBObject obj : arr) {
-			insert(obj);
+			insert(obj, null);
 		} 
 
 		writeResult.setN(arr.length);
@@ -350,7 +315,7 @@ public class DBCollection {
 	public WriteResult insert(List<DBObject> list) throws MongoException {
 
 		for(DBObject obj : list) {
-			insert(obj);
+			insert(obj, null);
 		} 
 
 		writeResult.setN(list.size());
@@ -902,20 +867,20 @@ public class DBCollection {
 
 	public void drop() throws MongoException {
 
-		if(db.jaccson.conn.tableOperations().exists(name)) {
+		if(db.jaccson.conn.tableOperations().exists(tableName)) {
 
 			//JSONObject dropIndexes = new JSONObject();
 			DBObject dropIndexes = new BasicDBObject();
 			for(String indexedKey : indexedKeys) {
 
 				dropIndexes.put(indexedKey, 1);
-
 			}
 
 			dropIndex(dropIndexes);
-
+			
 			try {
-				db.jaccson.conn.tableOperations().delete(name);
+				db.removeCollection(name);
+				db.jaccson.conn.tableOperations().delete(tableName);
 			} catch (TableNotFoundException e) {
 				e.printStackTrace();
 			} catch (AccumuloException e) {

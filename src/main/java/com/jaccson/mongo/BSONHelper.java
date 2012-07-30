@@ -8,8 +8,8 @@ import java.util.Map.Entry;
 
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
-
 import org.bson.BSON;
+import org.bson.BasicBSONObject;
 import org.bson.types.ObjectId;
 
 import com.mongodb.BasicDBList;
@@ -36,7 +36,7 @@ public class BSONHelper {
 
 
 	// TODO: does this need to handle arrays ? 
-	public static DBObject innerMostObjectForPath(String path, DBObject object)  {
+	public static BasicBSONObject innerMostObjectForPath(String path, BasicBSONObject finalObj)  {
 
 		String[] steps = path.split("\\.");
 
@@ -45,10 +45,10 @@ public class BSONHelper {
 
 			// TODO: if an array is encountered, grab first object within?
 			// or return an array of inner docs?
-			object = (DBObject) object.get(step);
+			finalObj = (BasicBSONObject) finalObj.get(step);
 		}
 
-		return object;
+		return finalObj;
 	} 
 
 	/**

@@ -1,12 +1,17 @@
 package com.jaccson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.HashSet;
+import java.util.Map;
 
-import org.json.*;
-
-import static org.junit.Assert.*;
-
+import org.bson.BasicBSONObject;
+import org.bson.types.BasicBSONList;
 import org.junit.Test;
+import org.mortbay.util.ajax.JSON;
 
 import com.jaccson.server.JaccsonUpdater;
 
@@ -15,35 +20,35 @@ public class UpdaterTests {
 	@Test
 	public void testPullAll() {
 		
-		try {
+		
 			
-			HashSet<Integer> evens = new HashSet<Integer>();
-			evens.add(2);
-			evens.add(4);
-			evens.add(6);
-			evens.add(8);
-			evens.add(10);
+			HashSet<Long> evens = new HashSet<Long>();
+			evens.add(2L);
+			evens.add(4L);
+			evens.add(6L);
+			evens.add(8L);
+			evens.add(10L);
 			
-			HashSet<Integer> odds = new HashSet<Integer>();
-			odds.add(1);
-			odds.add(3);
-			odds.add(5);
-			odds.add(7);
-			odds.add(9);
-			odds.add(11);
+			HashSet<Long> odds = new HashSet<Long>();
+			odds.add(1L);
+			odds.add(3L);
+			odds.add(5L);
+			odds.add(7L);
+			odds.add(9L);
+			odds.add(11L);
 			
-			JSONObject o = new JSONObject("{things:[1,2,3,4,5,6,7,8,9,10,11]}");
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"things\":[1,2,3,4,5,6,7,8,9,10,11]}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$pullAll':{things:[2,4,6,8,10]}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$pullAll\":{\"things\":[2,4,6,8,10]}}")), o);
 			
-			JSONArray things = o.getJSONArray("things");
-			for(int i=0; i <  things.length(); i++) {
+			BasicBSONList things = (BasicBSONList) o.get("things");
+			for(int i=0; i <  things.size(); i++) {
 				if(evens.contains(things.get(i))) {
 					fail();
 				}
 			}
 			
-			for(int i=0; i <  things.length(); i++) {
+			for(int i=0; i <  things.size(); i++) {
 				if(!odds.contains(things.get(i))) {
 					fail();
 				}
@@ -52,37 +57,34 @@ public class UpdaterTests {
 			
 			assertEquals(odds.size(), 0);
 			
-		} catch (JSONException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		
 	}
 	
 	@Test
 	public void testPull() {
 		
-		try {
-			JSONObject o = new JSONObject("{things:[1,2,3,4,5,6,7,8,9,10,11]}");
+		
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"things\":[1,2,3,4,5,6,7,8,9,10,11]}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$pull':{things:1}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$pull\":{\"things\":1}}")), o);
 						
-			HashSet<Integer> left = new HashSet<Integer>();
-			left.add(2);
-			left.add(3);
-			left.add(4);
-			left.add(5);
-			left.add(6);
-			left.add(7);
-			left.add(8);
-			left.add(9);
-			left.add(10);
-			left.add(11);
+			HashSet<Long> left = new HashSet<Long>();
+			left.add(2L);
+			left.add(3L);
+			left.add(4L);
+			left.add(5L);
+			left.add(6L);
+			left.add(7L);
+			left.add(8L);
+			left.add(9L);
+			left.add(10L);
+			left.add(11L);
 			
-			JSONArray things = o.getJSONArray("things");
+			BasicBSONList things = (BasicBSONList) o.get("things");
 			
-			for(int i=0; i < things.length(); i++) {
+			for(int i=0; i < things.size(); i++) {
 				
-				assertFalse((Integer)things.get(i) == 1);
+				assertFalse((Long)things.get(i) == 1);
 				
 				if(!left.contains(things.get(i)))
 					fail();
@@ -91,38 +93,35 @@ public class UpdaterTests {
 			
 			assertEquals(left.size(), 0);
 			
-		} catch (JSONException e) {
-			e.printStackTrace();
-			fail();
-		}
+		
 	}
 
 	@Test
 	public void testPop() {
 		try {
 			
-			JSONObject o = new JSONObject("{things:[1,2,3,4,5,6,7,8,9,10,11]}");
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"things\":[1,2,3,4,5,6,7,8,9,10,11]}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$pop':{things:0}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$pop\":{\"things\":0}}")), o);
 			
-			HashSet<Integer> left = new HashSet<Integer>();
-			left.add(1);
-			left.add(2);
-			left.add(3);
-			left.add(4);
-			left.add(5);
-			left.add(6);
-			left.add(7);
-			left.add(8);
-			left.add(9);
-			left.add(10);
+			HashSet<Long> left = new HashSet<Long>();
+			left.add(1L);
+			left.add(2L);
+			left.add(3L);
+			left.add(4L);
+			left.add(5L);
+			left.add(6L);
+			left.add(7L);
+			left.add(8L);
+			left.add(9L);
+			left.add(10L);
 			
 			
-			JSONArray things = o.getJSONArray("things");
+			BasicBSONList things = (BasicBSONList) o.get("things");
 			
-			for(int i=0; i < things.length(); i++) {
+			for(int i=0; i < things.size(); i++) {
 				
-				assertFalse((Integer)things.get(i) == 11);
+				assertFalse((Long)things.get(i) == 11);
 				
 				if(!left.contains(things.get(i)))
 					fail();
@@ -152,13 +151,13 @@ public class UpdaterTests {
 	public void testPushAll() {
 		try {
 		
-			JSONObject o = new JSONObject("{things:[0,1,2,3]}");
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"things\":[0,1,2,3]}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$pushAll':{things:[4,5,6]}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$pushAll\":{\"things\":[4,5,6]}}")), o);
 			
-			JSONArray things = o.getJSONArray("things");
-			for(int i=0; i < things.length(); i++) {
-				assertEquals(things.get(i), i);
+			BasicBSONList things = (BasicBSONList) o.get("things");
+			for(int i=0; i < things.size(); i++) {
+				assertEquals(things.get(i), (long)i);
 			}
 			
 		} catch (Exception e) {
@@ -170,13 +169,13 @@ public class UpdaterTests {
 	@Test
 	public void testPush() {
 		try {
-			JSONObject o = new JSONObject("{things:[0,1,2,3]}");
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"things\":[0,1,2,3]}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$push':{things:4}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$push\":{\"things\":4}}")), o);
 			
-			JSONArray things = o.getJSONArray("things");
-			for(int i=0; i < things.length(); i++) {
-				assertEquals(things.get(i), i);
+			BasicBSONList things = (BasicBSONList) o.get("things");
+			for(int i=0; i < things.size(); i++) {
+				assertEquals(things.get(i), (long)i);
 			}
 			
 		} catch (Exception e) {
@@ -189,24 +188,16 @@ public class UpdaterTests {
 	public void testUnset() {
 		try {
 			
-			JSONObject o = new JSONObject("{things:[0,1,2,3], extra:'b'}");
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"things\":[0,1,2,3], \"extra\":\"b\"}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$unset':{extra:1}}"), o);
-			
-			try {
-				o.get("extra");
-				fail();
-			}
-			catch (JSONException je) {
-				
-			}
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$unset\":{\"extra\":1}}")), o);			
 			
 			assertTrue(o.get("things") != null);
 			
 			// make sure things in unchanged
-			JSONArray things = o.getJSONArray("things");
-			for(int i=0; i < things.length(); i++) {
-				assertEquals(things.get(i), i);
+			Object[] things = (Object[]) o.get("things");
+			for(int i=0; i < things.length; i++) {
+				assertEquals(things[i], (long)i);
 			}
 			
 		} catch (Exception e) {
@@ -218,9 +209,9 @@ public class UpdaterTests {
 	@Test
 	public void testSet() {
 		try {
-			JSONObject o = new JSONObject("{things:[0,1,2,3]}");
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"things\":[0,1,2,3]}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$set':{extra:'b'}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$set\":{\"extra\":\"b\"}}")), o);
 			
 			
 			String extra = o.getString("extra");
@@ -228,9 +219,9 @@ public class UpdaterTests {
 			
 			assertEquals(extra, "b");
 			
-			JSONArray things = o.getJSONArray("things");
-			for(int i=0; i < things.length(); i++) {
-				assertEquals(things.get(i), i);
+			Object[] things = (Object[]) o.get("things");
+			for(int i=0; i < things.length; i++) {
+				assertEquals(things[i], (long)i);
 			}
 			
 			
@@ -243,15 +234,15 @@ public class UpdaterTests {
 	@Test
 	public void testIncrement() {
 		try {
-			JSONObject o = new JSONObject("{amount: 5}");
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"amount\": 5}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$inc':{amount:12}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$inc\":{\"amount\":12}}")), o);
 			
-			assertEquals(o.get("amount"), 17);
+			assertEquals(o.get("amount"), 17L);
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$inc':{amount:-50}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$inc\":{\"amount\":-50}}")), o);
 			
-			assertEquals(o.get("amount"), -33);
+			assertEquals(o.get("amount"), -33L);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -262,11 +253,11 @@ public class UpdaterTests {
 	@Test
 	public void seriesTest() {
 		try {
-			JSONObject o = new JSONObject("{amount: 5}");
+			BasicBSONObject o = new BasicBSONObject((Map)JSON.parse("{\"amount\": 5}"));
 			
-			JaccsonUpdater.applyUpdate(new JSONObject("{'$inc':{amount:12}}"), o);
+			JaccsonUpdater.applyUpdate(new BasicBSONObject((Map)JSON.parse("{\"$inc\":{\"amount\":12}}")), o);
 			
-			assertTrue(o.getInt("amount") == 17);
+			assertEquals(o.get("amount"), 17L);
 			
 		}
 		catch (Exception e) {

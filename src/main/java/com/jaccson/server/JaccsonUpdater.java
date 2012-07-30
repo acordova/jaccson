@@ -3,27 +3,27 @@ package com.jaccson.server;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.Combiner;
 import org.apache.log4j.Logger;
 import org.bson.BSON;
+import org.bson.BasicBSONObject;
+import org.bson.types.BasicBSONList;
 
 import com.jaccson.mongo.BSONHelper;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
-
+@SuppressWarnings("rawtypes")
 public class JaccsonUpdater extends Combiner {
 
 	static final Logger log = Logger.getLogger(JaccsonUpdater.class);
 
-	static DBObject deleteMarker = null;
+	static BasicBSONObject deleteMarker = null;
 	{
-		deleteMarker = (DBObject) JSON.parse("{$delete:1}");
+		deleteMarker = new BasicBSONObject((Map)JSON.parse("{$delete:1}"));
 	}
 
 
@@ -34,8 +34,8 @@ public class JaccsonUpdater extends Combiner {
 	}
 
 	// TODO: raise an error if an array is not found
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void pullAll(DBObject object, DBObject finalObj) {
+	@SuppressWarnings("unchecked")
+	public static void pullAll(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
 			return;
@@ -43,21 +43,22 @@ public class JaccsonUpdater extends Combiner {
 
 		String path = object.keySet().iterator().next();
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		BasicBSONObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
-		BasicDBList valuesToPullj = (BasicDBList)object.get(path);
+		
+		Object[] valuesToPullj = (Object[]) object.get(path);
 		HashSet valuesToPull = new HashSet();
-		for(int i=0; i < valuesToPullj.size(); i++) {
-			valuesToPull.add(valuesToPullj.get(i));
+		for(int i=0; i < valuesToPullj.length; i++) {
+			valuesToPull.add(valuesToPullj[i]);
 		}
 
-		BasicDBList existingArray = (BasicDBList)o.get(field);
-		BasicDBList newArray = new BasicDBList();
+		Object[] existingArray = (Object[]) o.get(field);
+		BasicBSONList newArray = new BasicBSONList();
 
 		// filter out values to pull from array
-		for(int i=0; i < existingArray.size(); i++) {
-			Object value = existingArray.get(i);
+		for(int i=0; i < existingArray.length; i++) {
+			Object value = existingArray[i];
 			if(valuesToPull.contains(value))
 				continue;
 
@@ -70,7 +71,7 @@ public class JaccsonUpdater extends Combiner {
 
 	// TODO: raise an error if an array is not found
 	// note: integer 1 and float 1.0 don't compare as equal ...
-	public static void pull(DBObject object, DBObject finalObj) {
+	public static void pull(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
 			return;
@@ -78,17 +79,17 @@ public class JaccsonUpdater extends Combiner {
 
 		String path = object.keySet().iterator().next();
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		BasicBSONObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
 		Object valueToPull = object.get(path);
 
-		BasicDBList existingArray = (BasicDBList)o.get(field);
-		BasicDBList newArray = new BasicDBList();
+		Object[] existingArray = (Object[])o.get(field);
+		BasicBSONList newArray = new BasicBSONList();
 
 		// filter out values to pull from array
-		for(int i=0; i < existingArray.size(); i++) {
-			Object value = existingArray.get(i);
+		for(int i=0; i < existingArray.length; i++) {
+			Object value = existingArray[i];
 
 			if(value.equals(valueToPull))
 				continue;		
@@ -103,7 +104,7 @@ public class JaccsonUpdater extends Combiner {
 
 	// TODO: raise an error if an array is not found
 	// TODO: support popping first element using -1
-	public static void pop(DBObject object, DBObject finalObj) {
+	public static void pop(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
 			return;
@@ -111,15 +112,15 @@ public class JaccsonUpdater extends Combiner {
 
 		String path = object.keySet().iterator().next();
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		BasicBSONObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
-		BasicDBList existingArray = (BasicDBList)o.get(field);
-		BasicDBList newArray = new BasicDBList();
+		Object[] existingArray = (Object[])o.get(field);
+		BasicBSONList newArray = new BasicBSONList();
 
 		// leave out the last
-		for(int i=0; i < existingArray.size()-1; i++) {
-			Object value = existingArray.get(i);
+		for(int i=0; i < existingArray.length-1; i++) {
+			Object value = existingArray[i];
 			newArray.add(value);
 		}
 
@@ -130,83 +131,96 @@ public class JaccsonUpdater extends Combiner {
 
 	// TODO: raise an error if an array is not found
 	// TODO: add $each support
-	public static DBObject addToSet(DBObject object, DBObject finalObj) {
+	public static BasicBSONObject addToSet(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
-			return object;
+			return new BasicBSONObject(object);
 		}
 
 		String path = object.keySet().iterator().next();
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		BasicBSONObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
-		BasicDBList objectsToAdd = (BasicDBList)object.get(path);
-		BasicDBList existingArray = (BasicDBList)o.get(field);
-		BasicDBList newArray = new BasicDBList();
+		Object[] objectsToAdd = (Object[])object.get(path);
+		Object[] existingArray = (Object[])o.get(field);
+		BasicBSONList newArray = new BasicBSONList();
 
 		HashSet<Object> values = new HashSet<Object>();
-		for(int i=0; i < existingArray.size(); i++)
-			values.add(existingArray.get(i));
+		for(int i=0; i < existingArray.length; i++)
+			values.add(existingArray[i]);
 
-		for(int i=0; i < objectsToAdd.size(); i++) 
-			values.add(objectsToAdd.get(i));
+		for(int i=0; i < objectsToAdd.length; i++) 
+			values.add(objectsToAdd[i]);
 
 		for(Object value : values)
 			newArray.add(value);
 
-		finalObj.removeField(field);
-		finalObj.put(field, newArray);
+		o.remove(field);
+		o.put(field, newArray);
 
 
 		return finalObj;
 	}
 
 	// TODO: raise an error if an array is not found
-	public static DBObject pushAll(DBObject object, DBObject finalObj) {
+	public static BasicBSONObject pushAll(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
-			return object;
+			return new BasicBSONObject(object);
 		}
 
 		String path = object.keySet().iterator().next();
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		BasicBSONObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
-		BasicDBList existingArray = (BasicDBList)o.get(field);
-		BasicDBList valuesToAdd = (BasicDBList)object.get(path);
+		Object[] objectsToAdd = (Object[])object.get(path);
+		Object[] existingArray = (Object[])o.get(field);
+		BasicBSONList newArray = new BasicBSONList();
 
-		for(int i=0; i < valuesToAdd.size(); i++) {
-			Object value = valuesToAdd.get(i);
+		HashSet<Object> values = new HashSet<Object>();
+		for(int i=0; i < existingArray.length; i++)
+			values.add(existingArray[i]);
 
-			existingArray.add(value);
-		}
+		for(int i=0; i < objectsToAdd.length; i++) 
+			values.add(objectsToAdd[i]);
 
+		for(Object value : values)
+			newArray.add(value);
+
+		o.remove(field);
+		o.put(field, newArray);
+		
 		return finalObj;
 	}
 
-	public static DBObject push(DBObject object, DBObject finalObj) {
+	public static BasicBSONObject push(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
-			return object;
+			return new BasicBSONObject(object);
 		}
 
 		String path = object.keySet().iterator().next();
 
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		BasicBSONObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
-		BasicDBList existingArray = (BasicDBList) o.get(field);
+		Object[] existingArray = (Object[]) o.get(field);
+		BasicBSONList newArray = new BasicBSONList();
+		
+		for(int i=0; i < existingArray.length; i++)
+			newArray.add(existingArray[i]);
+		
 		Object value = object.get(path);
-
-		existingArray.add(value);
-
+		newArray.add(value);
+		o.put(field, newArray);
+		
 		return finalObj;
 	}
 
-	public static void unset(DBObject object, DBObject finalObj) {
+	public static void unset(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
 			return;
@@ -215,21 +229,21 @@ public class JaccsonUpdater extends Combiner {
 		String path = object.keySet().iterator().next();
 
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		BasicBSONObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
-		o.removeField(field);
+		o.remove(field);
 	}
 
-	public static DBObject set(DBObject object, DBObject finalObj) {
+	public static BasicBSONObject set(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
-			return object;
+			return new BasicBSONObject(object);
 		}
 
 		String path = object.keySet().iterator().next();
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		BasicBSONObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
 		o.put(field, object.get(path));
@@ -238,16 +252,16 @@ public class JaccsonUpdater extends Combiner {
 		return finalObj;
 	}
 
-	public static DBObject increment(DBObject object, DBObject finalObj) {
+	public static BasicBSONObject increment(Map<String,Object> object, BasicBSONObject finalObj) {
 
 		if(finalObj == null) {
 
 			// may need to create subobjects
-			DBObject o = new BasicDBObject();
-			DBObject sub = o;
+			BasicBSONObject o = new BasicBSONObject();
+			BasicBSONObject sub = o;
 
 			for(String name : object.keySet().iterator().next().split("\\.")) {
-				DBObject inner = new BasicDBObject();
+				BasicBSONObject inner = new BasicBSONObject();
 				sub.put(name, inner);
 				sub = inner;
 			}
@@ -257,12 +271,12 @@ public class JaccsonUpdater extends Combiner {
 
 		String path = object.keySet().iterator().next();
 
-		Integer amount = (Integer) object.get(path);
+		Long amount = (Long) object.get(path);
 
-		DBObject o = BSONHelper.innerMostObjectForPath(path, finalObj);
+		Map<String,Object> o = BSONHelper.innerMostObjectForPath(path, finalObj);
 		String field = BSONHelper.fieldFromPath(path);
 
-		Integer i = (Integer) o.get(field);
+		Long i = (Long) o.get(field);
 		i += amount;
 		o.put(field, i);
 
@@ -271,12 +285,15 @@ public class JaccsonUpdater extends Combiner {
 	}
 
 
-	public static DBObject applyUpdate(DBObject update, DBObject finalObj) {
+	@SuppressWarnings("unchecked")
+	public static BasicBSONObject applyUpdate(BasicBSONObject next, BasicBSONObject finalObj) {
 
-		Iterator<String> keyIter = update.keySet().iterator();
+		
+		Iterator<String> keyIter = next.keySet().iterator();
+		
 		while(keyIter.hasNext()) {
 
-			String op = update.keySet().iterator().next();
+			String op = keyIter.next();
 
 			log.info("applying update " + op + " to object " + finalObj);
 
@@ -286,7 +303,7 @@ public class JaccsonUpdater extends Combiner {
 			}
 			catch (IllegalArgumentException iae){
 				log.info("simple overwrite");
-				finalObj = update;
+				finalObj = next;
 				break;
 			}
 
@@ -295,39 +312,39 @@ public class JaccsonUpdater extends Combiner {
 			// updates should contain at least one update operator ...		
 			switch(x) {
 			case $inc: { 
-				finalObj = increment((DBObject)update.get(op), finalObj);
+				finalObj = increment((Map<String,Object>) next.get(op), finalObj);
 				break;
 			}
 			case $set: {
-				finalObj = set((DBObject)update.get(op), finalObj);
+				finalObj = set((Map<String,Object>) next.get(op), finalObj);
 				break;
 			}
 			case $unset: {
-				unset((DBObject)update.get(op), finalObj);
+				unset((Map<String,Object>) next.get(op), finalObj);
 				break;
 			}
 			case $push: {
-				finalObj = push((DBObject)update.get(op), finalObj);
+				finalObj = push((Map<String,Object>)next.get(op), finalObj);
 				break;
 			}
 			case $pushAll: {
-				finalObj = pushAll((DBObject)update.get(op), finalObj);
+				finalObj = pushAll((Map<String,Object>) next.get(op), finalObj);
 				break;
 			}
 			case $addToSet: {
-				finalObj = addToSet((DBObject)update.get(op), finalObj);
+				finalObj = addToSet((Map<String,Object>)next.get(op), finalObj);
 				break;
 			}
 			case $pop: {
-				pop((DBObject)update.get(op), finalObj);
+				pop((Map<String,Object>)next.get(op), finalObj);
 				break;
 			}
 			case $pull: {
-				pull((DBObject)update.get(op), finalObj);
+				pull((Map<String, Object>) next.get(op), finalObj);
 				break;
 			}
 			case $pullAll: {
-				pullAll((DBObject)update.get(op), finalObj);
+				pullAll((Map<String,Object>)next.get(op), finalObj);
 				break;
 			}
 			case $rename: {
@@ -354,7 +371,7 @@ public class JaccsonUpdater extends Combiner {
 	@Override
 	public Value reduce(Key key, Iterator<Value> iter) {
 
-		DBObject finalObj = null; 
+		BasicBSONObject finalObj = null; 
 
 		// JaccsonTable inserts all mutations with reverse timestamps 
 		// so we can apply these as we read them
@@ -363,7 +380,7 @@ public class JaccsonUpdater extends Combiner {
 		while(iter.hasNext()) {
 
 			try {
-				DBObject next = (DBObject) BSON.decode(iter.next().get());
+				BasicBSONObject next = (BasicBSONObject) BSON.decode(iter.next().get());
 
 				log.info(next.toString());
 				finalObj = applyUpdate(next, finalObj);
