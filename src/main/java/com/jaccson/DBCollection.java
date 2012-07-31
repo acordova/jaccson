@@ -1,12 +1,12 @@
-package com.jaccson.mongo;
+package com.jaccson;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -291,7 +291,7 @@ public class DBCollection {
 	@SuppressWarnings("unchecked")
 	public WriteResult insert(String json) {
 		
-		return insert(new BasicDBObject((HashMap<String,Object>)JSON.parse(json)), null);
+		return insert(new BasicDBObject((Map<String,Object>)JSON.parse(json)), null);
 	}
 	
 	public WriteResult insert(DBObject... arr) throws MongoException {
@@ -864,7 +864,7 @@ public class DBCollection {
 
 	}
 
-
+	
 	public void drop() throws MongoException {
 
 		if(db.jaccson.conn.tableOperations().exists(tableName)) {

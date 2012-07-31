@@ -1,4 +1,4 @@
-package com.jaccson.mongo;
+package com.jaccson;
 
 import com.mongodb.CommandResult;
 import com.mongodb.DB;

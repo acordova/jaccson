@@ -1,4 +1,4 @@
-package com.jaccson.mongo;
+package com.jaccson;
 
 import java.util.ArrayList;
 import java.util.HashMap;

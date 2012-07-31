@@ -1,4 +1,4 @@
-package com.jaccson;
+package com.jaccson.deprec;
 
 import java.util.ArrayList;
 import java.util.Map.Entry;

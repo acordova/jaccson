@@ -1,29 +1,18 @@
-package com.jaccson.mongo;
+package com.jaccson;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.MutationsRejectedException;
-import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableExistsException;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Mutation;
-import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
-import org.apache.hadoop.io.Text;
 
 import com.mongodb.CommandResult;
 import com.mongodb.DBObject;
@@ -43,8 +32,7 @@ public class Jaccson  {
 	Authorizations auths;
 	String username;
 	String password;
-	private Scanner dbScanner;
-	private BatchWriter dbWriter;
+	DatabasesTable dbsTable;
 	private HashMap<String,DB> opendbs;
 	
 	public Jaccson(String zkServers, String instance, String user, String pass, String auths) throws AccumuloException, AccumuloSecurityException {
@@ -72,19 +60,8 @@ public class Jaccson  {
 			}
 		}
 		
-		try {
-			dbScanner = conn.createScanner("jaccson_databases", this.auths);
-		} catch (TableNotFoundException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			dbWriter = conn.createBatchWriter("jaccson_databases", 1000000L, 1000L, 2);
-		} catch (TableNotFoundException e) {
-			e.printStackTrace();
-		}
-		
 		opendbs = new HashMap<String,DB>();
+		dbsTable = new DatabasesTable(this);
 	}
 	
 	
@@ -94,23 +71,17 @@ public class Jaccson  {
 		if(!opendbs.containsKey(dbname)) {
 		
 			// create if necessary
-			dbScanner.setRange(new Range(dbname));
-			Iterator<Entry<Key, Value>> iter = dbScanner.iterator();
-			if(!iter.hasNext()) {
-				Mutation m = new Mutation(dbname);
-				try {
-					m.put("INFO", "creation", new Value(Value.longToBytes(System.currentTimeMillis())));
-					dbWriter.addMutation(m);
-					dbWriter.flush();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (MutationsRejectedException e) {
-					e.printStackTrace();
-				}
+			DB db;
+			try {
+				db = new DB(dbname, this);
+				opendbs.put(dbname, db);
+			} catch (MutationsRejectedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			
-			DB db = new DB(dbname, this);
-			opendbs.put(dbname, db);
 		}
 		
 		return opendbs.get(dbname);
@@ -118,20 +89,12 @@ public class Jaccson  {
 
 	
 	public Collection<DB> getUsedDatabases() {
-
 		return opendbs.values();
 	}
 
 	
 	public List<String> getDatabaseNames() throws MongoException {
-		ArrayList<String> dbs = new ArrayList<String>();
-		dbScanner.fetchColumnFamily(new Text("INFO"));
-		
-		for(Entry<Key, Value> e : dbScanner) {
-			dbs.add(e.getKey().getRow().toString());
-		}
-		
-		return dbs;
+		return dbsTable.listDBs();
 	}
 
 	

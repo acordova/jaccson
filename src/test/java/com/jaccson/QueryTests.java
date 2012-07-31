@@ -10,8 +10,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import com.jaccson.JaccsonConnection;
-import com.jaccson.JaccsonTable;
+import com.jaccson.deprec.JaccsonConnection;
+import com.jaccson.deprec.JaccsonTable;
 
 public class QueryTests {
 

@@ -17,8 +17,8 @@ import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.conf.ConfigurationBuilder;
 */
-import com.jaccson.JaccsonConnection;
-import com.jaccson.JaccsonTable;
+import com.jaccson.deprec.JaccsonConnection;
+import com.jaccson.deprec.JaccsonTable;
 
 /**
  * <p>This is a code example of Twitter4J Streaming API - sample method support.<br>

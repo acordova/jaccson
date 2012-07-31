@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.jaccson.JSONHelper;
+import com.jaccson.deprec.JSONHelper;
 
 import junit.framework.TestCase;
 

@@ -1,9 +1,10 @@
 
 
 
-package com.jaccson.mongo;
+package com.jaccson;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.data.Key;
@@ -23,13 +24,18 @@ public class BSONHelper {
 		return objectForKeyValue(pair.getKey(), pair.getValue());
 	}
 
+	@SuppressWarnings("unchecked")
 	public static DBObject objectForKeyValue(Key k, Value v) {
 		DBObject o = null;
 
-		o = (DBObject)BSON.decode(v.get());
+		o = new BasicDBObject((Map<String,Object>) BSON.decode(v.get()));
 
 		// add key 
-		o.put("_id", new ObjectId(k.getRow().toString()));
+		String objid = k.getRow().toString();
+		if(objid.endsWith("_o"))
+			o.put("_id", new ObjectId(k.getRow().toString().split("_")[0]));
+		else
+			o.put("_id", objid);
 
 		return (DBObject)o;
 	}

@@ -9,7 +9,7 @@
  * 
  */
 
-package com.jaccson;
+package com.jaccson.deprec;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -44,10 +44,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.jaccson.mongo.BuildIndexMR;
-import com.jaccson.mongo.IndexHelper;
-import com.jaccson.mongo.IterStack;
-import com.jaccson.mongo.TableMetadata;
+import com.jaccson.BuildIndexMR;
+import com.jaccson.IndexHelper;
+import com.jaccson.IterStack;
+import com.jaccson.TableMetadata;
 import com.jaccson.server.JaccsonUpdater;
 import com.jaccson.server.SelectIterator;
 import com.jaccson.server.JaccsonUpdater.operator;

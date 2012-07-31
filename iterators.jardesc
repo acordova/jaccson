@@ -12,6 +12,5 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
         <javaElement handleIdentifier="=jaccson/src\/main\/java&lt;com.jaccson.server"/>
-        <javaElement handleIdentifier="=jaccson/src\/main\/java&lt;com.jaccson.mongo{BSONHelper.java"/>
     </selectedElements>
 </jardesc>

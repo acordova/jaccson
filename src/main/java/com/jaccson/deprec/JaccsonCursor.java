@@ -1,4 +1,4 @@
-package com.jaccson;
+package com.jaccson.deprec;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,7 +8,7 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.jaccson.mongo.IndexScanner;
+import com.jaccson.IndexScanner;
 import com.jaccson.server.QueryFilter;
 import com.jaccson.server.SelectIterator;
 

@@ -1,4 +1,4 @@
-package com.jaccson.mongo;
+package com.jaccson;
 
 import java.util.Iterator;
 import java.util.Map.Entry;

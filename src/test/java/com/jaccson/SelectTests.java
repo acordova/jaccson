@@ -1,11 +1,12 @@
 package com.jaccson;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.jaccson.server.SelectIterator;
 
 import junit.framework.TestCase;
+
+import org.bson.BSONObject;
+
+import com.jaccson.server.SelectIterator;
+import com.mongodb.util.JSON;
 
 /**
  * these test the SelectIterator functionality by itself, 
@@ -18,124 +19,85 @@ public class SelectTests extends TestCase {
 
 	public void testSelectSimple() {
 
-		try {
-			JSONObject o = new JSONObject("{a:1, b:2, c:3}");
+		BSONObject o = (BSONObject) JSON.parse("{\"a\":1, \"b\":2, \"c\":3}");
 
-			JSONObject selected = SelectIterator.select(o, new JSONObject("{a:1}"));
+		BSONObject selected = SelectIterator.select(o, (BSONObject)JSON.parse("{\"a\":1}"));
 
-			assertTrue(selected.toString().equals("{\"a\":1}"));
+		assertTrue(selected.toString().equals("{ \"a\" : 1}"));
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			assertTrue(false);
-		}
 	}
 
 	public void testSelectTwo() {
 
-		try {
-			JSONObject o = new JSONObject("{a:1, b:2, c:3}");
 
-			JSONObject selected = SelectIterator.select(o, new JSONObject("{a:1, c:1}"));
+		BSONObject o = (BSONObject) JSON.parse("{\"a\":1, \"b\":2, \"c\":3}");
 
-			assertTrue(selected.toString().equals("{\"a\":1,\"c\":3}") || selected.toString().equals("{\"c\":3,\"a\":1}"));
+		BSONObject selected = SelectIterator.select(o, (BSONObject) JSON.parse("{\"a\":1, \"c\":1}"));
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			assertTrue(false);
-		}
+		assertTrue(selected.toString().equals("{ \"a\" : 1 , \"c\" : 3}") || selected.toString().equals("{ \"c\" : 3 , \"a\" : 1}"));
+
+
 	}
-	
+
 	public void testSelectNested() {
 
-		try {
-			JSONObject o = new JSONObject("{book:{author:'bob',price:50}}");
 
-			JSONObject selected = SelectIterator.select(o, new JSONObject("{book.author:1}"));
+		BSONObject o = (BSONObject) JSON.parse("{book:{author:\"bob\",\"price\":50}}");
 
-			assertTrue(selected.toString().equals("{\"book\":{\"author\":\"bob\"}}"));
+		BSONObject selected = SelectIterator.select(o, (BSONObject) JSON.parse("{\"book.author\":1}"));
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			assertTrue(false);
-		}
+		assertTrue(selected.toString().equals("{ \"book\" : { \"author\" : \"bob\"}}"));
+
+
 	}
-	
+
 	public void testArray() {
-		try {
-			JSONObject o = new JSONObject("{books:['a','b','c']}");
 
-			JSONObject selected = SelectIterator.select(o, new JSONObject("{books:1}"));
+		BSONObject o = (BSONObject) JSON.parse("{ \"books\" : [ \"a\" , \"b\" , \"c\"]}");
 
-			assertTrue(selected.toString().equals("{\"books\":[\"a\",\"b\",\"c\"]}"));
+		BSONObject selected = SelectIterator.select(o, (BSONObject) JSON.parse("{\"books\":1}"));
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			assertTrue(false);
-		}
+		assertTrue(selected.toString().equals("{ \"books\" : [ \"a\" , \"b\" , \"c\"]}"));
+
 	}
-	
+
 	public void testArrayNested() {
-		try {
-			JSONObject o = new JSONObject("{books:[{author:'bob',price:50},{author:'george',price:40}]}");
 
-			JSONObject selected = SelectIterator.select(o, new JSONObject("{books.author:1}"));
+		BSONObject o = (BSONObject) JSON.parse("{\"books\":[{\"author\":\"bob\",\"price\":50},{\"author\":\"george\",\"price\":40}]}");
 
-			assertTrue(selected.toString().equals("{\"books\":[{\"author\":\"bob\"},{\"author\":\"george\"}]}"));
+		BSONObject selected = SelectIterator.select(o, (BSONObject) JSON.parse("{\"books.author\":1}"));
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			assertTrue(false);
-		}
+		assertTrue(selected.toString().equals("{ \"books\" : [ { \"author\" : \"bob\" } , { \"author\" : \"george\"}]}"));
+
 	}
-	
+
 	public void testTwoNested() {
-		try {
-			JSONObject o = new JSONObject("{books:[{author:'bob',price:50,copies:12},{author:'george',price:40,copies:4}]}");
 
-			JSONObject selected = SelectIterator.select(o, new JSONObject("{books.author:1, books.copies:1}"));
+		BSONObject o = (BSONObject) JSON.parse("{\"books\":[{\"author\":\"bob\",\"price\":50,\"copies\":12},{\"author\":\"george\",\"price\":40,\"copies\":4}]}");
 
-			assertTrue(selected.toString().equals("{\"books\":[{\"author\":\"bob\",\"copies\":12},{\"author\":\"george\",\"copies\":4}]}"));
+		BSONObject selected = SelectIterator.select(o, (BSONObject) JSON.parse("{\"books.author\":1, \"books.copies\":1}"));
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			assertTrue(false);
-		}
+		assertTrue(selected.toString().equals("{ \"books\" : [ { \"author\" : \"bob\" , \"copies\" : 12 } , { \"author\" : \"george\" , \"copies\" : 4}]}"));
+
 	}
-	
+
 	public void testTwoAssymetric() {
-		try {
-			JSONObject o = new JSONObject("{books:[{author:'bob',price:50,copies:12},{author:'george',price:40}]}");
 
-			JSONObject selected = SelectIterator.select(o, new JSONObject("{books.author:1, books.copies:1}"));
+		BSONObject o = (BSONObject) JSON.parse("{books:[{author:\"bob\",price:50,copies:12},{author:\"george\",price:40}]}");
 
-			assertTrue(selected.toString().equals("{\"books\":[{\"author\":\"bob\",\"copies\":12},{\"author\":\"george\"}]}"));
+		BSONObject selected = SelectIterator.select(o, (BSONObject) JSON.parse("{\"books.author\":1, \"books.copies\":1}"));
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			assertTrue(false);
-		}
+		assertTrue(selected.toString().equals("{\"books\":[{\"author\":\"bob\",\"copies\":12},{\"author\":\"george\"}]}"));
+
 	}
-	
+
 	public void testTwoTotallyAssymetric() {
-		try {
-			JSONObject o = new JSONObject("{books:[{author:'bob',price:50,copies:12},{writer:'george',cost:40}]}");
 
-			JSONObject selected = SelectIterator.select(o, new JSONObject("{books.author:1, books.copies:1}"));
+		BSONObject o = (BSONObject) JSON.parse("{\"books:[{\"author\":\"bob\",\"price\":50,\"copies\":12},{\"writer\":\"george\",\"cost\":40}]}");
 
-			// mongo does this - leaves an empty object in an array
-			assertTrue(selected.toString().equals("{\"books\":[{\"author\":\"bob\",\"copies\":12},{}]}"));
+		BSONObject selected = SelectIterator.select(o, (BSONObject) JSON.parse("{\"books.author\":1, \"books.copies\":1}"));
 
-		} catch (JSONException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		}
+		// mongo does this - leaves an empty object in an array
+		assertTrue(selected.toString().equals("{\"books\":[{\"author\":\"bob\",\"copies\":12},{}]}"));
 	}
 }

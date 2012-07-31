@@ -4,7 +4,7 @@
  * 
  */
 
-package com.jaccson;
+package com.jaccson.deprec;
 
 
 import java.util.Iterator;

@@ -1,4 +1,4 @@
-package com.jaccson;
+package com.jaccson.deprec;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;

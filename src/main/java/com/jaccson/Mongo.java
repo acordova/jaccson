@@ -4,7 +4,7 @@
  * this exists to allow existing mongo clients to not have to change to use the Jaccson object
  * 
  */
-package com.jaccson.mongo;
+package com.jaccson;
 
 import java.util.Collection;
 import java.util.List;

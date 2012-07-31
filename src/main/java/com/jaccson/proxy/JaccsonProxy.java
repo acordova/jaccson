@@ -22,9 +22,9 @@ import org.apache.thrift.transport.TServerTransport;
 
 import org.json.JSONObject;
 
-import com.jaccson.JaccsonConnection;
-import com.jaccson.JaccsonCursor;
-import com.jaccson.JaccsonTable;
+import com.jaccson.deprec.JaccsonConnection;
+import com.jaccson.deprec.JaccsonCursor;
+import com.jaccson.deprec.JaccsonTable;
 
 public class JaccsonProxy implements TableCursorService.Iface {
 

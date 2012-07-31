@@ -1,50 +1,26 @@
 package com.jaccson;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.BatchWriter;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.ZooKeeperInstance;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Mutation;
-import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.security.Authorizations;
-import org.bson.BSON;
 import org.json.JSONObject;
 
-import com.jaccson.mongo.DB;
-import com.jaccson.mongo.DBCollection;
-import com.jaccson.mongo.Jaccson;
-import com.mongodb.BasicDBObject;
+import com.jaccson.deprec.JaccsonConnection;
+import com.jaccson.deprec.JaccsonCursor;
+import com.jaccson.deprec.JaccsonTable;
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 
 public class BasicTests extends TestCase {
-
-	public void testWrite() {
+/*
+	public void testNewJaccson() {
 		try {
-			ZooKeeperInstance inst = new ZooKeeperInstance("acc", "localhost");
-			Connector conn = inst.getConnector("root", "secret".getBytes());
+			Jaccson j = new Jaccson("localhost", "acc", "root", "secret", "");
 			
-			BatchWriter writer = conn.createBatchWriter("test_putGet", 1000000L, 1000L, 10);
-			Mutation m = new Mutation("test");
-			m.put("BSON", "sdf", new Value(BSON.encode(new BasicDBObject((Map)JSON.parse("{\"field\":\"value\"}")))));
-			writer.addMutation(m);
-			writer.flush();
-			
-			Scanner s = conn.createScanner("test_putGet", new Authorizations());
-			s.setRange(new Range("test"));
-			for(Entry<Key, Value> e : s) {
-				System.out.println(BSON.decode(e.getValue().get()));
-			}
+			List<String> dbs = j.getDatabaseNames();
+			assertTrue(dbs.size() == 0);
 			
 		} catch (AccumuloException e) {
 			// TODO Auto-generated catch block
@@ -52,12 +28,71 @@ public class BasicTests extends TestCase {
 		} catch (AccumuloSecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (TableNotFoundException e) {
-			// TODO Auto-generated catch block
+		}
+	}
+	
+	public void testCreateDeleteEmptyDB() {
+		try {
+			Jaccson j = new Jaccson("localhost", "acc", "root", "secret", "");
+			
+			DB db = j.getDB("testDB");
+			assertTrue(j.getDatabaseNames().size() > 0);
+			
+			db.dropDatabase();
+			assertTrue(j.getDatabaseNames().size() == 0);
+			
+		} catch (Exception e) {
 			e.printStackTrace();
+			fail();
 		}
 		
 	}
+	
+	public void testCreateDeleteCollection() {
+		try {
+			Jaccson j = new Jaccson("localhost", "acc", "root", "secret", "");
+			
+			DB db = j.getDB("testDB");
+			assertTrue(j.getDatabaseNames().size() > 0);
+			assertTrue(db.getCollectionNames().size() == 0);
+			
+			DBCollection coll = db.createCollection("testColl", null);
+			assertTrue(db.getCollectionNames().size() == 1);
+			
+			coll.drop();
+			assertTrue(db.getCollectionNames().size() == 0);
+			
+			db.dropDatabase();
+			assertTrue(j.getDatabaseNames().size() == 0);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	public void testDeleteNonEmptyDatabase() {
+		try {
+			Jaccson j = new Jaccson("localhost", "acc", "root", "secret", "");
+			
+			DB db = j.getDB("testDB");
+			assertTrue(j.getDatabaseNames().size() > 0);
+			assertTrue(db.getCollectionNames().size() == 0);
+			
+			db.createCollection("testColl", null);
+			assertTrue(db.getCollectionNames().size() == 1);
+			
+			db.dropDatabase();
+			assertTrue(j.getDatabaseNames().size() == 0);
+			
+			assertTrue(db.dbsTable.listCollections("testDB").size() == 0);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	*/
 	
 	public void testPutGet() {
 
@@ -76,7 +111,7 @@ public class BasicTests extends TestCase {
 			coll.drop();
 
 			System.out.println(o);
-			assertTrue(o.toString().equals("{\"amount\":3,\"field\":\"abc\",\"_id\":\"123\"}"));
+			assertTrue(o.toString().equals("{ \"amount\" : 3 , \"field\" : \"abc\" , \"_id\" : \"123\"}"));
 
 		} catch (Exception e) {
 			e.printStackTrace();

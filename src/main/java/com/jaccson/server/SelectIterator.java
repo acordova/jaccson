@@ -18,15 +18,16 @@ import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.OptionDescriber;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
 import org.apache.accumulo.core.iterators.WrappingIterator;
+
 import org.bson.BSON;
-import org.mortbay.util.ajax.JSON;
+import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
+import org.bson.types.BasicBSONList;
 
+import com.jaccson.BSONHelper;
+import com.jaccson.IterStack;
 
-import com.jaccson.JSONHelper;
-import com.jaccson.mongo.IterStack;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 /**
  * This selects subdocuments from JSON docs
@@ -39,7 +40,7 @@ import com.mongodb.DBObject;
  */
 public class SelectIterator  extends WrappingIterator implements OptionDescriber {
 
-	DBObject select;
+	BSONObject select;
 	//private static final Logger log = Logger.getLogger(IteratorUtil.class);
 
 
@@ -49,7 +50,7 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 	public void init(SortedKeyValueIterator<Key,Value> source, Map<String,String> options, IteratorEnvironment env) throws IOException {
 		super.init(source, options, env);
 
-		select = (DBObject) JSON.parse(options.get("select"));
+		select = (BSONObject) JSON.parse(options.get("select"));
 	}
 
 	public SelectIterator(SortedKeyValueIterator<Key,Value> iterator) throws IOException {
@@ -61,9 +62,9 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 
 		Value v = super.getTopValue();
 
-		DBObject selected;
+		BSONObject selected;
 
-		DBObject vo = (DBObject) BSON.decode(v.get());
+		BSONObject vo = (BSONObject) BSON.decode(v.get());
 
 		// perform select
 		selected = select(vo, select);
@@ -139,13 +140,13 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 		cfg.addOption("select", select);
 	}
 
-	public static void setSelectOnScanner(Scanner scanner, DBObject select) {
+	public static void setSelectOnScanner(Scanner scanner, BSONObject select) {
 		IteratorSetting selectIterSetting = new IteratorSetting(IterStack.SELECT_ITERATOR_PRI, "jaccsonSelecter", "com.jaccson.server.SelectIterator");
 		SelectIterator.setSelect(selectIterSetting, select.toString());
 		scanner.addScanIterator(selectIterSetting);
 	}
 
-	public static void setSelectOnScanner(BatchScanner bscan, DBObject select) {
+	public static void setSelectOnScanner(BatchScanner bscan, BSONObject select) {
 		IteratorSetting selectIterSetting = new IteratorSetting(IterStack.SELECT_ITERATOR_PRI, "jaccsonSelecter", "com.jaccson.server.SelectIterator");
 		SelectIterator.setSelect(selectIterSetting, select.toString());
 		bscan.addScanIterator(selectIterSetting);
@@ -155,9 +156,9 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 		scanner.removeScanIterator("jaccsonSelecter");
 	}
 
-	public static DBObject select(DBObject original, DBObject filter) {
+	public static BSONObject select(BSONObject original, BSONObject filter) {
 
-		DBObject selected = new BasicDBObject();
+		BSONObject selected = new BasicBSONObject();
 
 		for(String path : filter.keySet()) {
 			subObjectForPath(path, original, selected);
@@ -168,22 +169,22 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 
 	private static Object subObjectForPath(String path, Object o, Object sub) {
 
-		if(o instanceof BasicDBList) {
-			BasicDBList oa = (BasicDBList)o;
-			BasicDBList subArray = (BasicDBList)sub;
+		if(o instanceof BasicBSONList) {
+			BasicBSONList oa = (BasicBSONList)o;
+			BasicBSONList subArray = (BasicBSONList)sub;
 
 			for(int i=0; i < oa.size(); i++) {
 
 				Object inner = oa.get(i);
-				if(inner instanceof DBObject) {
+				if(inner instanceof BSONObject) {
 					if(i >= subArray.size())
-						subArray.add(subObjectForPath(path, inner, new BasicDBObject()));
+						subArray.add(subObjectForPath(path, inner, new BasicBSONObject()));
 					else
 						subObjectForPath(path, inner, subArray.get(i));
 				}
 				else {
 					if(i >= subArray.size())
-						subArray.add(subObjectForPath(path, inner, new BasicDBList()));
+						subArray.add(subObjectForPath(path, inner, new BasicBSONList()));
 					else
 						subObjectForPath(path, inner, subArray.get(i));
 				}
@@ -194,31 +195,31 @@ public class SelectIterator  extends WrappingIterator implements OptionDescriber
 		else {
 
 			// sub should be json object too
-			DBObject subObj = (DBObject)sub;
+			BSONObject subObj = (BSONObject)sub;
 
 			String[] steps = path.split("\\.");
 
 			if(steps.length == 1) { // base case
-				DBObject jo = (DBObject)o;
+				BSONObject jo = (BSONObject)o;
 				if(!jo.containsField(steps[0]))
 					return sub;
 				subObj.put(steps[0], jo.get(steps[0]));
 				return sub;
 			}
 
-			String subpath = JSONHelper.suffixPath(path);
+			String subpath = BSONHelper.suffixPath(path);
 
 			// recurse
-			if(((DBObject)o).containsField(steps[0])) {
+			if(((BSONObject)o).containsField(steps[0])) {
 				if(subObj.containsField(steps[0])) {
-					subObj.put(steps[0], subObjectForPath(subpath, ((DBObject)o).get(steps[0]), subObj.get(steps[0])));
+					subObj.put(steps[0], subObjectForPath(subpath, ((BSONObject)o).get(steps[0]), subObj.get(steps[0])));
 				}
 				else {
-					Object inner = ((DBObject)o).get(steps[0]);
-					if(inner instanceof DBObject)
-						subObj.put(steps[0], subObjectForPath(subpath, inner, new BasicDBObject()));
+					Object inner = ((BSONObject)o).get(steps[0]);
+					if(inner instanceof BSONObject)
+						subObj.put(steps[0], subObjectForPath(subpath, inner, new BasicBSONObject()));
 					else
-						subObj.put(steps[0], subObjectForPath(subpath, inner, new BasicDBList()));
+						subObj.put(steps[0], subObjectForPath(subpath, inner, new BasicBSONList()));
 				}
 			}
 

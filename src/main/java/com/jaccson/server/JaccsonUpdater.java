@@ -13,18 +13,12 @@ import org.bson.BSON;
 import org.bson.BasicBSONObject;
 import org.bson.types.BasicBSONList;
 
-import com.jaccson.mongo.BSONHelper;
-import com.mongodb.util.JSON;
+import com.jaccson.BSONHelper;
 
 @SuppressWarnings("rawtypes")
 public class JaccsonUpdater extends Combiner {
 
 	static final Logger log = Logger.getLogger(JaccsonUpdater.class);
-
-	static BasicBSONObject deleteMarker = null;
-	{
-		deleteMarker = new BasicBSONObject((Map)JSON.parse("{$delete:1}"));
-	}
 
 
 	public enum operator {
@@ -387,17 +381,17 @@ public class JaccsonUpdater extends Combiner {
 
 			}
 
-			catch (IllegalArgumentException iae) {
+			catch (Exception e) {
 				// TODO: handle this
-				log.info(iae.getMessage());
+				log.info(e.getMessage());
 			}
 		}
 
 		if(finalObj == null) {
-			finalObj = deleteMarker;
+			finalObj = DeletedFilter.DELETE_OBJECT;
 		}
 
-		return new Value(finalObj.toString().getBytes());
+		return new Value(BSON.encode(finalObj));
 	}
 }
 

@@ -12,8 +12,8 @@ import org.apache.accumulo.core.iterators.Filter;
 import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
 
-import com.jaccson.mongo.BSONHelper;
-import com.jaccson.mongo.IterStack;
+import com.jaccson.BSONHelper;
+import com.jaccson.IterStack;
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
