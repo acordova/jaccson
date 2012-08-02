@@ -16,91 +16,103 @@ except:
 
 
 class Iface:
-  def insert(self, table, json):
+  def insertBatch(self, db, coll, json):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - json
     """
     pass
 
-  def update(self, table, query, mods):
+  def update(self, db, coll, query, mods):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - query
      - mods
     """
     pass
 
-  def find(self, table, query, select):
+  def find(self, db, coll, query, select):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - query
      - select
     """
     pass
 
-  def findOne(self, table, query, select):
+  def findOne(self, db, coll, query, select):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - query
      - select
     """
     pass
 
-  def get(self, table, oid):
+  def get(self, db, coll, oid):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - oid
     """
     pass
 
-  def remove(self, table, query):
+  def remove(self, db, coll, query):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - query
     """
     pass
 
-  def flush(self, table):
+  def flush(self, db, coll):
     """
     Parameters:
-     - table
+     - db
+     - coll
     """
     pass
 
-  def ensureIndex(self, table, path):
+  def ensureIndex(self, db, coll, obj, drop):
     """
     Parameters:
-     - table
-     - path
+     - db
+     - coll
+     - obj
+     - drop
     """
     pass
 
-  def dropIndex(self, table, path):
+  def dropIndex(self, db, coll, obj):
     """
     Parameters:
-     - table
-     - path
+     - db
+     - coll
+     - obj
     """
     pass
 
-  def compact(self, table):
+  def compact(self, db, coll):
     """
     Parameters:
-     - table
+     - db
+     - coll
     """
     pass
 
-  def drop(self, table):
+  def drop(self, db, coll):
     """
     Parameters:
-     - table
+     - db
+     - coll
     """
     pass
 
@@ -119,50 +131,56 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def insert(self, table, json):
+  def insertBatch(self, db, coll, json):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - json
     """
-    self.send_insert(table, json)
-    self.recv_insert()
+    self.send_insertBatch(db, coll, json)
+    self.recv_insertBatch()
 
-  def send_insert(self, table, json):
-    self._oprot.writeMessageBegin('insert', TMessageType.CALL, self._seqid)
-    args = insert_args()
-    args.table = table
+  def send_insertBatch(self, db, coll, json):
+    self._oprot.writeMessageBegin('insertBatch', TMessageType.CALL, self._seqid)
+    args = insertBatch_args()
+    args.db = db
+    args.coll = coll
     args.json = json
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_insert(self, ):
+  def recv_insertBatch(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = insert_result()
+    result = insertBatch_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.e != None:
+      raise result.e
     return
 
-  def update(self, table, query, mods):
+  def update(self, db, coll, query, mods):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - query
      - mods
     """
-    self.send_update(table, query, mods)
+    self.send_update(db, coll, query, mods)
     self.recv_update()
 
-  def send_update(self, table, query, mods):
+  def send_update(self, db, coll, query, mods):
     self._oprot.writeMessageBegin('update', TMessageType.CALL, self._seqid)
     args = update_args()
-    args.table = table
+    args.db = db
+    args.coll = coll
     args.query = query
     args.mods = mods
     args.write(self._oprot)
@@ -179,22 +197,26 @@ class Client(Iface):
     result = update_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.e != None:
+      raise result.e
     return
 
-  def find(self, table, query, select):
+  def find(self, db, coll, query, select):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - query
      - select
     """
-    self.send_find(table, query, select)
+    self.send_find(db, coll, query, select)
     return self.recv_find()
 
-  def send_find(self, table, query, select):
+  def send_find(self, db, coll, query, select):
     self._oprot.writeMessageBegin('find', TMessageType.CALL, self._seqid)
     args = find_args()
-    args.table = table
+    args.db = db
+    args.coll = coll
     args.query = query
     args.select = select
     args.write(self._oprot)
@@ -213,22 +235,26 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
+    if result.e != None:
+      raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "find failed: unknown result");
 
-  def findOne(self, table, query, select):
+  def findOne(self, db, coll, query, select):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - query
      - select
     """
-    self.send_findOne(table, query, select)
+    self.send_findOne(db, coll, query, select)
     return self.recv_findOne()
 
-  def send_findOne(self, table, query, select):
+  def send_findOne(self, db, coll, query, select):
     self._oprot.writeMessageBegin('findOne', TMessageType.CALL, self._seqid)
     args = findOne_args()
-    args.table = table
+    args.db = db
+    args.coll = coll
     args.query = query
     args.select = select
     args.write(self._oprot)
@@ -247,21 +273,25 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
+    if result.e != None:
+      raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "findOne failed: unknown result");
 
-  def get(self, table, oid):
+  def get(self, db, coll, oid):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - oid
     """
-    self.send_get(table, oid)
+    self.send_get(db, coll, oid)
     return self.recv_get()
 
-  def send_get(self, table, oid):
+  def send_get(self, db, coll, oid):
     self._oprot.writeMessageBegin('get', TMessageType.CALL, self._seqid)
     args = get_args()
-    args.table = table
+    args.db = db
+    args.coll = coll
     args.oid = oid
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
@@ -279,21 +309,25 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
+    if result.e != None:
+      raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get failed: unknown result");
 
-  def remove(self, table, query):
+  def remove(self, db, coll, query):
     """
     Parameters:
-     - table
+     - db
+     - coll
      - query
     """
-    self.send_remove(table, query)
+    self.send_remove(db, coll, query)
     self.recv_remove()
 
-  def send_remove(self, table, query):
+  def send_remove(self, db, coll, query):
     self._oprot.writeMessageBegin('remove', TMessageType.CALL, self._seqid)
     args = remove_args()
-    args.table = table
+    args.db = db
+    args.coll = coll
     args.query = query
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
@@ -309,20 +343,24 @@ class Client(Iface):
     result = remove_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.e != None:
+      raise result.e
     return
 
-  def flush(self, table):
+  def flush(self, db, coll):
     """
     Parameters:
-     - table
+     - db
+     - coll
     """
-    self.send_flush(table)
+    self.send_flush(db, coll)
     self.recv_flush()
 
-  def send_flush(self, table):
+  def send_flush(self, db, coll):
     self._oprot.writeMessageBegin('flush', TMessageType.CALL, self._seqid)
     args = flush_args()
-    args.table = table
+    args.db = db
+    args.coll = coll
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -337,22 +375,28 @@ class Client(Iface):
     result = flush_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.e != None:
+      raise result.e
     return
 
-  def ensureIndex(self, table, path):
+  def ensureIndex(self, db, coll, obj, drop):
     """
     Parameters:
-     - table
-     - path
+     - db
+     - coll
+     - obj
+     - drop
     """
-    self.send_ensureIndex(table, path)
+    self.send_ensureIndex(db, coll, obj, drop)
     self.recv_ensureIndex()
 
-  def send_ensureIndex(self, table, path):
+  def send_ensureIndex(self, db, coll, obj, drop):
     self._oprot.writeMessageBegin('ensureIndex', TMessageType.CALL, self._seqid)
     args = ensureIndex_args()
-    args.table = table
-    args.path = path
+    args.db = db
+    args.coll = coll
+    args.obj = obj
+    args.drop = drop
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -367,22 +411,26 @@ class Client(Iface):
     result = ensureIndex_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.e != None:
+      raise result.e
     return
 
-  def dropIndex(self, table, path):
+  def dropIndex(self, db, coll, obj):
     """
     Parameters:
-     - table
-     - path
+     - db
+     - coll
+     - obj
     """
-    self.send_dropIndex(table, path)
+    self.send_dropIndex(db, coll, obj)
     self.recv_dropIndex()
 
-  def send_dropIndex(self, table, path):
+  def send_dropIndex(self, db, coll, obj):
     self._oprot.writeMessageBegin('dropIndex', TMessageType.CALL, self._seqid)
     args = dropIndex_args()
-    args.table = table
-    args.path = path
+    args.db = db
+    args.coll = coll
+    args.obj = obj
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -397,20 +445,24 @@ class Client(Iface):
     result = dropIndex_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.e != None:
+      raise result.e
     return
 
-  def compact(self, table):
+  def compact(self, db, coll):
     """
     Parameters:
-     - table
+     - db
+     - coll
     """
-    self.send_compact(table)
+    self.send_compact(db, coll)
     self.recv_compact()
 
-  def send_compact(self, table):
+  def send_compact(self, db, coll):
     self._oprot.writeMessageBegin('compact', TMessageType.CALL, self._seqid)
     args = compact_args()
-    args.table = table
+    args.db = db
+    args.coll = coll
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -425,20 +477,24 @@ class Client(Iface):
     result = compact_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.e != None:
+      raise result.e
     return
 
-  def drop(self, table):
+  def drop(self, db, coll):
     """
     Parameters:
-     - table
+     - db
+     - coll
     """
-    self.send_drop(table)
+    self.send_drop(db, coll)
     self.recv_drop()
 
-  def send_drop(self, table):
+  def send_drop(self, db, coll):
     self._oprot.writeMessageBegin('drop', TMessageType.CALL, self._seqid)
     args = drop_args()
-    args.table = table
+    args.db = db
+    args.coll = coll
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -453,6 +509,8 @@ class Client(Iface):
     result = drop_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.e != None:
+      raise result.e
     return
 
   def nextBatch(self, cursor):
@@ -483,6 +541,8 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
+    if result.e != None:
+      raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "nextBatch failed: unknown result");
 
 
@@ -490,7 +550,7 @@ class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
-    self._processMap["insert"] = Processor.process_insert
+    self._processMap["insertBatch"] = Processor.process_insertBatch
     self._processMap["update"] = Processor.process_update
     self._processMap["find"] = Processor.process_find
     self._processMap["findOne"] = Processor.process_findOne
@@ -518,13 +578,16 @@ class Processor(Iface, TProcessor):
       self._processMap[name](self, seqid, iprot, oprot)
     return True
 
-  def process_insert(self, seqid, iprot, oprot):
-    args = insert_args()
+  def process_insertBatch(self, seqid, iprot, oprot):
+    args = insertBatch_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = insert_result()
-    self._handler.insert(args.table, args.json)
-    oprot.writeMessageBegin("insert", TMessageType.REPLY, seqid)
+    result = insertBatch_result()
+    try:
+      self._handler.insertBatch(args.db, args.coll, args.json)
+    except JaccsonException, e:
+      result.e = e
+    oprot.writeMessageBegin("insertBatch", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -534,7 +597,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = update_result()
-    self._handler.update(args.table, args.query, args.mods)
+    try:
+      self._handler.update(args.db, args.coll, args.query, args.mods)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("update", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -545,7 +611,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = find_result()
-    result.success = self._handler.find(args.table, args.query, args.select)
+    try:
+      result.success = self._handler.find(args.db, args.coll, args.query, args.select)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("find", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -556,7 +625,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = findOne_result()
-    result.success = self._handler.findOne(args.table, args.query, args.select)
+    try:
+      result.success = self._handler.findOne(args.db, args.coll, args.query, args.select)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("findOne", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -567,7 +639,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = get_result()
-    result.success = self._handler.get(args.table, args.oid)
+    try:
+      result.success = self._handler.get(args.db, args.coll, args.oid)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("get", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -578,7 +653,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = remove_result()
-    self._handler.remove(args.table, args.query)
+    try:
+      self._handler.remove(args.db, args.coll, args.query)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("remove", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -589,7 +667,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = flush_result()
-    self._handler.flush(args.table)
+    try:
+      self._handler.flush(args.db, args.coll)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("flush", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -600,7 +681,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = ensureIndex_result()
-    self._handler.ensureIndex(args.table, args.path)
+    try:
+      self._handler.ensureIndex(args.db, args.coll, args.obj, args.drop)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("ensureIndex", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -611,7 +695,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = dropIndex_result()
-    self._handler.dropIndex(args.table, args.path)
+    try:
+      self._handler.dropIndex(args.db, args.coll, args.obj)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("dropIndex", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -622,7 +709,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = compact_result()
-    self._handler.compact(args.table)
+    try:
+      self._handler.compact(args.db, args.coll)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("compact", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -633,7 +723,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = drop_result()
-    self._handler.drop(args.table)
+    try:
+      self._handler.drop(args.db, args.coll)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("drop", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -644,7 +737,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = nextBatch_result()
-    result.success = self._handler.nextBatch(args.cursor)
+    try:
+      result.success = self._handler.nextBatch(args.cursor)
+    except JaccsonException, e:
+      result.e = e
     oprot.writeMessageBegin("nextBatch", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -653,21 +749,24 @@ class Processor(Iface, TProcessor):
 
 # HELPER FUNCTIONS AND STRUCTURES
 
-class insert_args:
+class insertBatch_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
    - json
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
-    (2, TType.STRING, 'json', None, None, ), # 2
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
+    (3, TType.LIST, 'json', (TType.STRING,None), None, ), # 3
   )
 
-  def __init__(self, table=None, json=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None, json=None,):
+    self.db = db
+    self.coll = coll
     self.json = json
 
   def read(self, iprot):
@@ -681,12 +780,22 @@ class insert_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.json = iprot.readString();
+          self.coll = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.json = []
+          (_etype3, _size0) = iprot.readListBegin()
+          for _i4 in xrange(_size0):
+            _elem5 = iprot.readString();
+            self.json.append(_elem5)
+          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       else:
@@ -698,14 +807,21 @@ class insert_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('insert_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    oprot.writeStructBegin('insertBatch_args')
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     if self.json != None:
-      oprot.writeFieldBegin('json', TType.STRING, 2)
-      oprot.writeString(self.json)
+      oprot.writeFieldBegin('json', TType.LIST, 3)
+      oprot.writeListBegin(TType.STRING, len(self.json))
+      for iter6 in self.json:
+        oprot.writeString(iter6)
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -724,10 +840,19 @@ class insert_args:
   def __ne__(self, other):
     return not (self == other)
 
-class insert_result:
+class insertBatch_result:
+  """
+  Attributes:
+   - e
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, e=None,):
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -738,6 +863,12 @@ class insert_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -747,7 +878,11 @@ class insert_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('insert_result')
+    oprot.writeStructBegin('insertBatch_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -768,20 +903,23 @@ class insert_result:
 class update_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
    - query
    - mods
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
-    (2, TType.STRING, 'query', None, None, ), # 2
-    (3, TType.STRING, 'mods', None, None, ), # 3
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
+    (3, TType.STRING, 'query', None, None, ), # 3
+    (4, TType.STRING, 'mods', None, None, ), # 4
   )
 
-  def __init__(self, table=None, query=None, mods=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None, query=None, mods=None,):
+    self.db = db
+    self.coll = coll
     self.query = query
     self.mods = mods
 
@@ -796,15 +934,20 @@ class update_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.query = iprot.readString();
+          self.coll = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 3:
+        if ftype == TType.STRING:
+          self.query = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
         if ftype == TType.STRING:
           self.mods = iprot.readString();
         else:
@@ -819,16 +962,20 @@ class update_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('update_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     if self.query != None:
-      oprot.writeFieldBegin('query', TType.STRING, 2)
+      oprot.writeFieldBegin('query', TType.STRING, 3)
       oprot.writeString(self.query)
       oprot.writeFieldEnd()
     if self.mods != None:
-      oprot.writeFieldBegin('mods', TType.STRING, 3)
+      oprot.writeFieldBegin('mods', TType.STRING, 4)
       oprot.writeString(self.mods)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -849,9 +996,18 @@ class update_args:
     return not (self == other)
 
 class update_result:
+  """
+  Attributes:
+   - e
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, e=None,):
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -862,6 +1018,12 @@ class update_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -872,6 +1034,10 @@ class update_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('update_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -892,20 +1058,23 @@ class update_result:
 class find_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
    - query
    - select
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
-    (2, TType.STRING, 'query', None, None, ), # 2
-    (3, TType.STRING, 'select', None, None, ), # 3
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
+    (3, TType.STRING, 'query', None, None, ), # 3
+    (4, TType.STRING, 'select', None, None, ), # 4
   )
 
-  def __init__(self, table=None, query=None, select=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None, query=None, select=None,):
+    self.db = db
+    self.coll = coll
     self.query = query
     self.select = select
 
@@ -920,15 +1089,20 @@ class find_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.query = iprot.readString();
+          self.coll = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 3:
+        if ftype == TType.STRING:
+          self.query = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
         if ftype == TType.STRING:
           self.select = iprot.readString();
         else:
@@ -943,16 +1117,20 @@ class find_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('find_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     if self.query != None:
-      oprot.writeFieldBegin('query', TType.STRING, 2)
+      oprot.writeFieldBegin('query', TType.STRING, 3)
       oprot.writeString(self.query)
       oprot.writeFieldEnd()
     if self.select != None:
-      oprot.writeFieldBegin('select', TType.STRING, 3)
+      oprot.writeFieldBegin('select', TType.STRING, 4)
       oprot.writeString(self.select)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -976,14 +1154,17 @@ class find_result:
   """
   Attributes:
    - success
+   - e
   """
 
   thrift_spec = (
     (0, TType.I32, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, e=None,):
     self.success = success
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -999,6 +1180,12 @@ class find_result:
           self.success = iprot.readI32();
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1012,6 +1199,10 @@ class find_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.I32, 0)
       oprot.writeI32(self.success)
+      oprot.writeFieldEnd()
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1033,20 +1224,23 @@ class find_result:
 class findOne_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
    - query
    - select
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
-    (2, TType.STRING, 'query', None, None, ), # 2
-    (3, TType.STRING, 'select', None, None, ), # 3
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
+    (3, TType.STRING, 'query', None, None, ), # 3
+    (4, TType.STRING, 'select', None, None, ), # 4
   )
 
-  def __init__(self, table=None, query=None, select=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None, query=None, select=None,):
+    self.db = db
+    self.coll = coll
     self.query = query
     self.select = select
 
@@ -1061,15 +1255,20 @@ class findOne_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.query = iprot.readString();
+          self.coll = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 3:
+        if ftype == TType.STRING:
+          self.query = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
         if ftype == TType.STRING:
           self.select = iprot.readString();
         else:
@@ -1084,16 +1283,20 @@ class findOne_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('findOne_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     if self.query != None:
-      oprot.writeFieldBegin('query', TType.STRING, 2)
+      oprot.writeFieldBegin('query', TType.STRING, 3)
       oprot.writeString(self.query)
       oprot.writeFieldEnd()
     if self.select != None:
-      oprot.writeFieldBegin('select', TType.STRING, 3)
+      oprot.writeFieldBegin('select', TType.STRING, 4)
       oprot.writeString(self.select)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1117,14 +1320,17 @@ class findOne_result:
   """
   Attributes:
    - success
+   - e
   """
 
   thrift_spec = (
     (0, TType.STRING, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, e=None,):
     self.success = success
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1140,6 +1346,12 @@ class findOne_result:
           self.success = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1153,6 +1365,10 @@ class findOne_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.STRING, 0)
       oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1174,18 +1390,21 @@ class findOne_result:
 class get_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
    - oid
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
-    (2, TType.STRING, 'oid', None, None, ), # 2
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
+    (3, TType.STRING, 'oid', None, None, ), # 3
   )
 
-  def __init__(self, table=None, oid=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None, oid=None,):
+    self.db = db
+    self.coll = coll
     self.oid = oid
 
   def read(self, iprot):
@@ -1199,10 +1418,15 @@ class get_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
+        if ftype == TType.STRING:
+          self.coll = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
         if ftype == TType.STRING:
           self.oid = iprot.readString();
         else:
@@ -1217,12 +1441,16 @@ class get_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('get_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     if self.oid != None:
-      oprot.writeFieldBegin('oid', TType.STRING, 2)
+      oprot.writeFieldBegin('oid', TType.STRING, 3)
       oprot.writeString(self.oid)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1246,14 +1474,17 @@ class get_result:
   """
   Attributes:
    - success
+   - e
   """
 
   thrift_spec = (
     (0, TType.STRING, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, e=None,):
     self.success = success
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1269,6 +1500,12 @@ class get_result:
           self.success = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1282,6 +1519,10 @@ class get_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.STRING, 0)
       oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1303,18 +1544,21 @@ class get_result:
 class remove_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
    - query
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
-    (2, TType.STRING, 'query', None, None, ), # 2
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
+    (3, TType.STRING, 'query', None, None, ), # 3
   )
 
-  def __init__(self, table=None, query=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None, query=None,):
+    self.db = db
+    self.coll = coll
     self.query = query
 
   def read(self, iprot):
@@ -1328,10 +1572,15 @@ class remove_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
+        if ftype == TType.STRING:
+          self.coll = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
         if ftype == TType.STRING:
           self.query = iprot.readString();
         else:
@@ -1346,12 +1595,16 @@ class remove_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('remove_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     if self.query != None:
-      oprot.writeFieldBegin('query', TType.STRING, 2)
+      oprot.writeFieldBegin('query', TType.STRING, 3)
       oprot.writeString(self.query)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1372,9 +1625,18 @@ class remove_args:
     return not (self == other)
 
 class remove_result:
+  """
+  Attributes:
+   - e
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, e=None,):
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1385,6 +1647,12 @@ class remove_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1395,6 +1663,10 @@ class remove_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('remove_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -1415,16 +1687,19 @@ class remove_result:
 class flush_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
   )
 
-  def __init__(self, table=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None,):
+    self.db = db
+    self.coll = coll
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1437,7 +1712,12 @@ class flush_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.coll = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -1450,9 +1730,13 @@ class flush_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('flush_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1472,9 +1756,18 @@ class flush_args:
     return not (self == other)
 
 class flush_result:
+  """
+  Attributes:
+   - e
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, e=None,):
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1485,6 +1778,12 @@ class flush_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1495,6 +1794,10 @@ class flush_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('flush_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -1515,19 +1818,25 @@ class flush_result:
 class ensureIndex_args:
   """
   Attributes:
-   - table
-   - path
+   - db
+   - coll
+   - obj
+   - drop
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
-    (2, TType.STRING, 'path', None, None, ), # 2
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
+    (3, TType.STRING, 'obj', None, None, ), # 3
+    (4, TType.BOOL, 'drop', None, None, ), # 4
   )
 
-  def __init__(self, table=None, path=None,):
-    self.table = table
-    self.path = path
+  def __init__(self, db=None, coll=None, obj=None, drop=None,):
+    self.db = db
+    self.coll = coll
+    self.obj = obj
+    self.drop = drop
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1540,12 +1849,22 @@ class ensureIndex_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.path = iprot.readString();
+          self.coll = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.obj = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.BOOL:
+          self.drop = iprot.readBool();
         else:
           iprot.skip(ftype)
       else:
@@ -1558,13 +1877,21 @@ class ensureIndex_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('ensureIndex_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
       oprot.writeFieldEnd()
-    if self.path != None:
-      oprot.writeFieldBegin('path', TType.STRING, 2)
-      oprot.writeString(self.path)
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
+      oprot.writeFieldEnd()
+    if self.obj != None:
+      oprot.writeFieldBegin('obj', TType.STRING, 3)
+      oprot.writeString(self.obj)
+      oprot.writeFieldEnd()
+    if self.drop != None:
+      oprot.writeFieldBegin('drop', TType.BOOL, 4)
+      oprot.writeBool(self.drop)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1584,9 +1911,18 @@ class ensureIndex_args:
     return not (self == other)
 
 class ensureIndex_result:
+  """
+  Attributes:
+   - e
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, e=None,):
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1597,6 +1933,12 @@ class ensureIndex_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1607,6 +1949,10 @@ class ensureIndex_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('ensureIndex_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -1627,19 +1973,22 @@ class ensureIndex_result:
 class dropIndex_args:
   """
   Attributes:
-   - table
-   - path
+   - db
+   - coll
+   - obj
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
-    (2, TType.STRING, 'path', None, None, ), # 2
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
+    (3, TType.STRING, 'obj', None, None, ), # 3
   )
 
-  def __init__(self, table=None, path=None,):
-    self.table = table
-    self.path = path
+  def __init__(self, db=None, coll=None, obj=None,):
+    self.db = db
+    self.coll = coll
+    self.obj = obj
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1652,12 +2001,17 @@ class dropIndex_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.path = iprot.readString();
+          self.coll = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.obj = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -1670,13 +2024,17 @@ class dropIndex_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('dropIndex_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
       oprot.writeFieldEnd()
-    if self.path != None:
-      oprot.writeFieldBegin('path', TType.STRING, 2)
-      oprot.writeString(self.path)
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
+      oprot.writeFieldEnd()
+    if self.obj != None:
+      oprot.writeFieldBegin('obj', TType.STRING, 3)
+      oprot.writeString(self.obj)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1696,9 +2054,18 @@ class dropIndex_args:
     return not (self == other)
 
 class dropIndex_result:
+  """
+  Attributes:
+   - e
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, e=None,):
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1709,6 +2076,12 @@ class dropIndex_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1719,6 +2092,10 @@ class dropIndex_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('dropIndex_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -1739,16 +2116,19 @@ class dropIndex_result:
 class compact_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
   )
 
-  def __init__(self, table=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None,):
+    self.db = db
+    self.coll = coll
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1761,7 +2141,12 @@ class compact_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.coll = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -1774,9 +2159,13 @@ class compact_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('compact_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1796,9 +2185,18 @@ class compact_args:
     return not (self == other)
 
 class compact_result:
+  """
+  Attributes:
+   - e
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, e=None,):
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1809,6 +2207,12 @@ class compact_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1819,6 +2223,10 @@ class compact_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('compact_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -1839,16 +2247,19 @@ class compact_result:
 class drop_args:
   """
   Attributes:
-   - table
+   - db
+   - coll
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'table', None, None, ), # 1
+    (1, TType.STRING, 'db', None, None, ), # 1
+    (2, TType.STRING, 'coll', None, None, ), # 2
   )
 
-  def __init__(self, table=None,):
-    self.table = table
+  def __init__(self, db=None, coll=None,):
+    self.db = db
+    self.coll = coll
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1861,7 +2272,12 @@ class drop_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.table = iprot.readString();
+          self.db = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.coll = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -1874,9 +2290,13 @@ class drop_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('drop_args')
-    if self.table != None:
-      oprot.writeFieldBegin('table', TType.STRING, 1)
-      oprot.writeString(self.table)
+    if self.db != None:
+      oprot.writeFieldBegin('db', TType.STRING, 1)
+      oprot.writeString(self.db)
+      oprot.writeFieldEnd()
+    if self.coll != None:
+      oprot.writeFieldBegin('coll', TType.STRING, 2)
+      oprot.writeString(self.coll)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1896,9 +2316,18 @@ class drop_args:
     return not (self == other)
 
 class drop_result:
+  """
+  Attributes:
+   - e
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, e=None,):
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1909,6 +2338,12 @@ class drop_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1919,6 +2354,10 @@ class drop_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('drop_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -1999,14 +2438,17 @@ class nextBatch_result:
   """
   Attributes:
    - success
+   - e
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
+    (1, TType.STRUCT, 'e', (JaccsonException, JaccsonException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, e=None,):
     self.success = success
+    self.e = e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2020,11 +2462,17 @@ class nextBatch_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype3, _size0) = iprot.readListBegin()
-          for _i4 in xrange(_size0):
-            _elem5 = iprot.readString();
-            self.success.append(_elem5)
+          (_etype10, _size7) = iprot.readListBegin()
+          for _i11 in xrange(_size7):
+            _elem12 = iprot.readString();
+            self.success.append(_elem12)
           iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = JaccsonException()
+          self.e.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -2040,9 +2488,13 @@ class nextBatch_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter6 in self.success:
-        oprot.writeString(iter6)
+      for iter13 in self.success:
+        oprot.writeString(iter13)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

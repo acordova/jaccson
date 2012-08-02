@@ -25,6 +25,7 @@ import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ToolRunner;
 import org.bson.BSON;
+import org.bson.BSONObject;
 import org.bson.types.ObjectId;
 import org.mortbay.util.ajax.JSON;
 
@@ -430,6 +431,10 @@ public class DBCollection {
 		return update(q, o, false, multi, null, null);
 	}
 
+	public WriteResult update(String q, String o) {
+		return update(new BasicDBObject((Map)JSON.parse(q)), new BasicDBObject((Map)JSON.parse(o)));
+	}
+	
 	public WriteResult update(DBObject q, DBObject o) throws MongoException {
 
 		return update(q, o, false, false, null, null);
@@ -532,7 +537,10 @@ public class DBCollection {
 		return remove(o);
 	}
 
-
+	public WriteResult remove(String query) {
+		return remove(new BasicDBObject((Map)JSON.parse(query)));
+	}
+	
 	public WriteResult remove(DBObject query) throws MongoException {
 		
 		try {
@@ -589,6 +597,10 @@ public class DBCollection {
 		return find(null, null, 0, 0);
 	}
 
+	public DBCursor find(String ref) {
+		return find(new BasicDBObject((Map)JSON.parse(ref)));
+	}
+	
 	public DBCursor find(DBObject ref) {
 		return find(ref, null, 0, 0);
 	}
@@ -597,6 +609,10 @@ public class DBCollection {
 		return find(ref, keys, 0, 0);
 	}
 
+	public DBCursor find(String ref, String keys) {
+		return find(new BasicDBObject((Map)JSON.parse(ref)), new BasicDBObject((Map)JSON.parse(keys)));
+	}
+	
 	public DBCursor find(DBObject query, DBObject fields, int numToSkip, int batchSize, int options) throws MongoException {
 
 		return find(query, fields, numToSkip, batchSize);
@@ -632,6 +648,10 @@ public class DBCollection {
 		return findOne(obj, null);
 	}
 
+	public DBObject findOne(String o, String fields) {
+		return findOne(new BasicDBObject((Map)JSON.parse(o)), new BasicDBObject((Map)JSON.parse(fields)));
+	}
+	
 	public DBObject findOne(DBObject o, DBObject fields) {
 		// TODO Auto-generated method stub
 		return null;
@@ -642,7 +662,11 @@ public class DBCollection {
 		return null;
 	}
 
-	public DBObject get(Object id, DBObject select) {
+	public DBObject get(Object id, String select) {
+		return get(id, new BasicDBObject((Map)JSON.parse(select)));
+	}
+	
+	public DBObject get(Object id, BSONObject select) {
 		
 		String rowid = null;
 		if(id instanceof String) {
@@ -667,7 +691,7 @@ public class DBCollection {
 			result = BSONHelper.objectForEntry(pair);
 		}
 		
-		SelectIterator.removeSelectOnScanner(simpleGetter);
+		//SelectIterator.removeSelectOnScanner(simpleGetter);
 		return result;
 	}
 
@@ -676,13 +700,13 @@ public class DBCollection {
 		// findOne({"_id:x"}) is the same as get(x)
 
 		if(obj instanceof String || obj instanceof ObjectId) {
-			return get(obj, null);
+			return get(obj, (DBObject)null);
 		}
 		else if(obj instanceof DBObject) {
 			DBObject query = (DBObject)obj;
 			
 			if(query.keySet().size() == 1 && query.get("_id") != null) {
-				return get(query.get("_id"), null);
+				return get(query.get("_id"), (DBObject)null);
 			}
 			
 			DBCursor cursor = find(query, select);
@@ -789,10 +813,9 @@ public class DBCollection {
 	}
 
 
-	public void ensureIndex(String name) {
-		DBObject keys = new BasicDBObject();
-		keys.put(name, 1);
-		createIndex(keys);
+	public void ensureIndex(String obj) {
+		DBObject keys = new BasicDBObject((Map)JSON.parse(obj));
+		ensureIndex(keys);
 	}
 
 
@@ -1195,5 +1218,11 @@ public class DBCollection {
 		} catch (TableNotFoundException e) {
 			return null;
 		}
+	}
+
+
+	public void compact() {
+		// TODO Auto-generated method stub
+		
 	}
 }

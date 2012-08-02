@@ -24,27 +24,27 @@ public class TableCursorService {
 
   public interface Iface {
 
-    public void insertBatch(String table, List<String> json) throws JaccsonException, org.apache.thrift.TException;
+    public void insertBatch(String db, String coll, List<String> json) throws JaccsonException, org.apache.thrift.TException;
 
-    public void update(String table, String query, String mods) throws JaccsonException, org.apache.thrift.TException;
+    public void update(String db, String coll, String query, String mods) throws JaccsonException, org.apache.thrift.TException;
 
-    public int find(String table, String query, String select) throws JaccsonException, org.apache.thrift.TException;
+    public int find(String db, String coll, String query, String select) throws JaccsonException, org.apache.thrift.TException;
 
-    public String findOne(String table, String query, String select) throws JaccsonException, org.apache.thrift.TException;
+    public String findOne(String db, String coll, String query, String select) throws JaccsonException, org.apache.thrift.TException;
 
-    public String get(String table, String oid) throws JaccsonException, org.apache.thrift.TException;
+    public String get(String db, String coll, String oid) throws JaccsonException, org.apache.thrift.TException;
 
-    public void remove(String table, String query) throws JaccsonException, org.apache.thrift.TException;
+    public void remove(String db, String coll, String query) throws JaccsonException, org.apache.thrift.TException;
 
-    public void flush(String table) throws JaccsonException, org.apache.thrift.TException;
+    public void flush(String db, String coll) throws JaccsonException, org.apache.thrift.TException;
 
-    public void ensureIndex(String table, String path) throws JaccsonException, org.apache.thrift.TException;
+    public void ensureIndex(String db, String coll, String obj, boolean drop) throws JaccsonException, org.apache.thrift.TException;
 
-    public void dropIndex(String table, String path) throws JaccsonException, org.apache.thrift.TException;
+    public void dropIndex(String db, String coll, String obj) throws JaccsonException, org.apache.thrift.TException;
 
-    public void compact(String table) throws JaccsonException, org.apache.thrift.TException;
+    public void compact(String db, String coll) throws JaccsonException, org.apache.thrift.TException;
 
-    public void drop(String table) throws JaccsonException, org.apache.thrift.TException;
+    public void drop(String db, String coll) throws JaccsonException, org.apache.thrift.TException;
 
     public List<String> nextBatch(int cursor) throws JaccsonException, org.apache.thrift.TException;
 
@@ -52,27 +52,27 @@ public class TableCursorService {
 
   public interface AsyncIface {
 
-    public void insertBatch(String table, List<String> json, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.insertBatch_call> resultHandler) throws org.apache.thrift.TException;
+    public void insertBatch(String db, String coll, List<String> json, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.insertBatch_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void update(String table, String query, String mods, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.update_call> resultHandler) throws org.apache.thrift.TException;
+    public void update(String db, String coll, String query, String mods, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.update_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void find(String table, String query, String select, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.find_call> resultHandler) throws org.apache.thrift.TException;
+    public void find(String db, String coll, String query, String select, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.find_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void findOne(String table, String query, String select, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.findOne_call> resultHandler) throws org.apache.thrift.TException;
+    public void findOne(String db, String coll, String query, String select, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.findOne_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void get(String table, String oid, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_call> resultHandler) throws org.apache.thrift.TException;
+    public void get(String db, String coll, String oid, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void remove(String table, String query, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.remove_call> resultHandler) throws org.apache.thrift.TException;
+    public void remove(String db, String coll, String query, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.remove_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void flush(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.flush_call> resultHandler) throws org.apache.thrift.TException;
+    public void flush(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.flush_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void ensureIndex(String table, String path, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.ensureIndex_call> resultHandler) throws org.apache.thrift.TException;
+    public void ensureIndex(String db, String coll, String obj, boolean drop, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.ensureIndex_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void dropIndex(String table, String path, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.dropIndex_call> resultHandler) throws org.apache.thrift.TException;
+    public void dropIndex(String db, String coll, String obj, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.dropIndex_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void compact(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.compact_call> resultHandler) throws org.apache.thrift.TException;
+    public void compact(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.compact_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void drop(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.drop_call> resultHandler) throws org.apache.thrift.TException;
+    public void drop(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.drop_call> resultHandler) throws org.apache.thrift.TException;
 
     public void nextBatch(int cursor, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.nextBatch_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -115,17 +115,18 @@ public class TableCursorService {
       return this.oprot_;
     }
 
-    public void insertBatch(String table, List<String> json) throws JaccsonException, org.apache.thrift.TException
+    public void insertBatch(String db, String coll, List<String> json) throws JaccsonException, org.apache.thrift.TException
     {
-      send_insertBatch(table, json);
+      send_insertBatch(db, coll, json);
       recv_insertBatch();
     }
 
-    public void send_insertBatch(String table, List<String> json) throws org.apache.thrift.TException
+    public void send_insertBatch(String db, String coll, List<String> json) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("insertBatch", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       insertBatch_args args = new insertBatch_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.setJson(json);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -152,17 +153,18 @@ public class TableCursorService {
       return;
     }
 
-    public void update(String table, String query, String mods) throws JaccsonException, org.apache.thrift.TException
+    public void update(String db, String coll, String query, String mods) throws JaccsonException, org.apache.thrift.TException
     {
-      send_update(table, query, mods);
+      send_update(db, coll, query, mods);
       recv_update();
     }
 
-    public void send_update(String table, String query, String mods) throws org.apache.thrift.TException
+    public void send_update(String db, String coll, String query, String mods) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("update", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       update_args args = new update_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.setQuery(query);
       args.setMods(mods);
       args.write(oprot_);
@@ -190,17 +192,18 @@ public class TableCursorService {
       return;
     }
 
-    public int find(String table, String query, String select) throws JaccsonException, org.apache.thrift.TException
+    public int find(String db, String coll, String query, String select) throws JaccsonException, org.apache.thrift.TException
     {
-      send_find(table, query, select);
+      send_find(db, coll, query, select);
       return recv_find();
     }
 
-    public void send_find(String table, String query, String select) throws org.apache.thrift.TException
+    public void send_find(String db, String coll, String query, String select) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("find", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       find_args args = new find_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.setQuery(query);
       args.setSelect(select);
       args.write(oprot_);
@@ -231,17 +234,18 @@ public class TableCursorService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "find failed: unknown result");
     }
 
-    public String findOne(String table, String query, String select) throws JaccsonException, org.apache.thrift.TException
+    public String findOne(String db, String coll, String query, String select) throws JaccsonException, org.apache.thrift.TException
     {
-      send_findOne(table, query, select);
+      send_findOne(db, coll, query, select);
       return recv_findOne();
     }
 
-    public void send_findOne(String table, String query, String select) throws org.apache.thrift.TException
+    public void send_findOne(String db, String coll, String query, String select) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("findOne", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       findOne_args args = new findOne_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.setQuery(query);
       args.setSelect(select);
       args.write(oprot_);
@@ -272,17 +276,18 @@ public class TableCursorService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "findOne failed: unknown result");
     }
 
-    public String get(String table, String oid) throws JaccsonException, org.apache.thrift.TException
+    public String get(String db, String coll, String oid) throws JaccsonException, org.apache.thrift.TException
     {
-      send_get(table, oid);
+      send_get(db, coll, oid);
       return recv_get();
     }
 
-    public void send_get(String table, String oid) throws org.apache.thrift.TException
+    public void send_get(String db, String coll, String oid) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("get", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       get_args args = new get_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.setOid(oid);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -312,17 +317,18 @@ public class TableCursorService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "get failed: unknown result");
     }
 
-    public void remove(String table, String query) throws JaccsonException, org.apache.thrift.TException
+    public void remove(String db, String coll, String query) throws JaccsonException, org.apache.thrift.TException
     {
-      send_remove(table, query);
+      send_remove(db, coll, query);
       recv_remove();
     }
 
-    public void send_remove(String table, String query) throws org.apache.thrift.TException
+    public void send_remove(String db, String coll, String query) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("remove", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       remove_args args = new remove_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.setQuery(query);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -349,17 +355,18 @@ public class TableCursorService {
       return;
     }
 
-    public void flush(String table) throws JaccsonException, org.apache.thrift.TException
+    public void flush(String db, String coll) throws JaccsonException, org.apache.thrift.TException
     {
-      send_flush(table);
+      send_flush(db, coll);
       recv_flush();
     }
 
-    public void send_flush(String table) throws org.apache.thrift.TException
+    public void send_flush(String db, String coll) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("flush", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       flush_args args = new flush_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -385,18 +392,20 @@ public class TableCursorService {
       return;
     }
 
-    public void ensureIndex(String table, String path) throws JaccsonException, org.apache.thrift.TException
+    public void ensureIndex(String db, String coll, String obj, boolean drop) throws JaccsonException, org.apache.thrift.TException
     {
-      send_ensureIndex(table, path);
+      send_ensureIndex(db, coll, obj, drop);
       recv_ensureIndex();
     }
 
-    public void send_ensureIndex(String table, String path) throws org.apache.thrift.TException
+    public void send_ensureIndex(String db, String coll, String obj, boolean drop) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("ensureIndex", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       ensureIndex_args args = new ensureIndex_args();
-      args.setTable(table);
-      args.setPath(path);
+      args.setDb(db);
+      args.setColl(coll);
+      args.setObj(obj);
+      args.setDrop(drop);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -422,18 +431,19 @@ public class TableCursorService {
       return;
     }
 
-    public void dropIndex(String table, String path) throws JaccsonException, org.apache.thrift.TException
+    public void dropIndex(String db, String coll, String obj) throws JaccsonException, org.apache.thrift.TException
     {
-      send_dropIndex(table, path);
+      send_dropIndex(db, coll, obj);
       recv_dropIndex();
     }
 
-    public void send_dropIndex(String table, String path) throws org.apache.thrift.TException
+    public void send_dropIndex(String db, String coll, String obj) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("dropIndex", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       dropIndex_args args = new dropIndex_args();
-      args.setTable(table);
-      args.setPath(path);
+      args.setDb(db);
+      args.setColl(coll);
+      args.setObj(obj);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -459,17 +469,18 @@ public class TableCursorService {
       return;
     }
 
-    public void compact(String table) throws JaccsonException, org.apache.thrift.TException
+    public void compact(String db, String coll) throws JaccsonException, org.apache.thrift.TException
     {
-      send_compact(table);
+      send_compact(db, coll);
       recv_compact();
     }
 
-    public void send_compact(String table) throws org.apache.thrift.TException
+    public void send_compact(String db, String coll) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("compact", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       compact_args args = new compact_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -495,17 +506,18 @@ public class TableCursorService {
       return;
     }
 
-    public void drop(String table) throws JaccsonException, org.apache.thrift.TException
+    public void drop(String db, String coll) throws JaccsonException, org.apache.thrift.TException
     {
-      send_drop(table);
+      send_drop(db, coll);
       recv_drop();
     }
 
-    public void send_drop(String table) throws org.apache.thrift.TException
+    public void send_drop(String db, String coll) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("drop", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       drop_args args = new drop_args();
-      args.setTable(table);
+      args.setDb(db);
+      args.setColl(coll);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -588,26 +600,29 @@ public class TableCursorService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void insertBatch(String table, List<String> json, org.apache.thrift.async.AsyncMethodCallback<insertBatch_call> resultHandler) throws org.apache.thrift.TException {
+    public void insertBatch(String db, String coll, List<String> json, org.apache.thrift.async.AsyncMethodCallback<insertBatch_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      insertBatch_call method_call = new insertBatch_call(table, json, resultHandler, this, protocolFactory, transport);
+      insertBatch_call method_call = new insertBatch_call(db, coll, json, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class insertBatch_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
+      private String db;
+      private String coll;
       private List<String> json;
-      public insertBatch_call(String table, List<String> json, org.apache.thrift.async.AsyncMethodCallback<insertBatch_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public insertBatch_call(String db, String coll, List<String> json, org.apache.thrift.async.AsyncMethodCallback<insertBatch_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
         this.json = json;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("insertBatch", org.apache.thrift.protocol.TMessageType.CALL, 0));
         insertBatch_args args = new insertBatch_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.setJson(json);
         args.write(prot);
         prot.writeMessageEnd();
@@ -623,20 +638,22 @@ public class TableCursorService {
       }
     }
 
-    public void update(String table, String query, String mods, org.apache.thrift.async.AsyncMethodCallback<update_call> resultHandler) throws org.apache.thrift.TException {
+    public void update(String db, String coll, String query, String mods, org.apache.thrift.async.AsyncMethodCallback<update_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      update_call method_call = new update_call(table, query, mods, resultHandler, this, protocolFactory, transport);
+      update_call method_call = new update_call(db, coll, query, mods, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class update_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
+      private String db;
+      private String coll;
       private String query;
       private String mods;
-      public update_call(String table, String query, String mods, org.apache.thrift.async.AsyncMethodCallback<update_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public update_call(String db, String coll, String query, String mods, org.apache.thrift.async.AsyncMethodCallback<update_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
         this.query = query;
         this.mods = mods;
       }
@@ -644,7 +661,8 @@ public class TableCursorService {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("update", org.apache.thrift.protocol.TMessageType.CALL, 0));
         update_args args = new update_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.setQuery(query);
         args.setMods(mods);
         args.write(prot);
@@ -661,20 +679,22 @@ public class TableCursorService {
       }
     }
 
-    public void find(String table, String query, String select, org.apache.thrift.async.AsyncMethodCallback<find_call> resultHandler) throws org.apache.thrift.TException {
+    public void find(String db, String coll, String query, String select, org.apache.thrift.async.AsyncMethodCallback<find_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      find_call method_call = new find_call(table, query, select, resultHandler, this, protocolFactory, transport);
+      find_call method_call = new find_call(db, coll, query, select, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class find_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
+      private String db;
+      private String coll;
       private String query;
       private String select;
-      public find_call(String table, String query, String select, org.apache.thrift.async.AsyncMethodCallback<find_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public find_call(String db, String coll, String query, String select, org.apache.thrift.async.AsyncMethodCallback<find_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
         this.query = query;
         this.select = select;
       }
@@ -682,7 +702,8 @@ public class TableCursorService {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("find", org.apache.thrift.protocol.TMessageType.CALL, 0));
         find_args args = new find_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.setQuery(query);
         args.setSelect(select);
         args.write(prot);
@@ -699,20 +720,22 @@ public class TableCursorService {
       }
     }
 
-    public void findOne(String table, String query, String select, org.apache.thrift.async.AsyncMethodCallback<findOne_call> resultHandler) throws org.apache.thrift.TException {
+    public void findOne(String db, String coll, String query, String select, org.apache.thrift.async.AsyncMethodCallback<findOne_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      findOne_call method_call = new findOne_call(table, query, select, resultHandler, this, protocolFactory, transport);
+      findOne_call method_call = new findOne_call(db, coll, query, select, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class findOne_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
+      private String db;
+      private String coll;
       private String query;
       private String select;
-      public findOne_call(String table, String query, String select, org.apache.thrift.async.AsyncMethodCallback<findOne_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public findOne_call(String db, String coll, String query, String select, org.apache.thrift.async.AsyncMethodCallback<findOne_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
         this.query = query;
         this.select = select;
       }
@@ -720,7 +743,8 @@ public class TableCursorService {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("findOne", org.apache.thrift.protocol.TMessageType.CALL, 0));
         findOne_args args = new findOne_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.setQuery(query);
         args.setSelect(select);
         args.write(prot);
@@ -737,26 +761,29 @@ public class TableCursorService {
       }
     }
 
-    public void get(String table, String oid, org.apache.thrift.async.AsyncMethodCallback<get_call> resultHandler) throws org.apache.thrift.TException {
+    public void get(String db, String coll, String oid, org.apache.thrift.async.AsyncMethodCallback<get_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      get_call method_call = new get_call(table, oid, resultHandler, this, protocolFactory, transport);
+      get_call method_call = new get_call(db, coll, oid, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class get_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
+      private String db;
+      private String coll;
       private String oid;
-      public get_call(String table, String oid, org.apache.thrift.async.AsyncMethodCallback<get_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public get_call(String db, String coll, String oid, org.apache.thrift.async.AsyncMethodCallback<get_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
         this.oid = oid;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("get", org.apache.thrift.protocol.TMessageType.CALL, 0));
         get_args args = new get_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.setOid(oid);
         args.write(prot);
         prot.writeMessageEnd();
@@ -772,26 +799,29 @@ public class TableCursorService {
       }
     }
 
-    public void remove(String table, String query, org.apache.thrift.async.AsyncMethodCallback<remove_call> resultHandler) throws org.apache.thrift.TException {
+    public void remove(String db, String coll, String query, org.apache.thrift.async.AsyncMethodCallback<remove_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      remove_call method_call = new remove_call(table, query, resultHandler, this, protocolFactory, transport);
+      remove_call method_call = new remove_call(db, coll, query, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class remove_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
+      private String db;
+      private String coll;
       private String query;
-      public remove_call(String table, String query, org.apache.thrift.async.AsyncMethodCallback<remove_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public remove_call(String db, String coll, String query, org.apache.thrift.async.AsyncMethodCallback<remove_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
         this.query = query;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("remove", org.apache.thrift.protocol.TMessageType.CALL, 0));
         remove_args args = new remove_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.setQuery(query);
         args.write(prot);
         prot.writeMessageEnd();
@@ -807,24 +837,27 @@ public class TableCursorService {
       }
     }
 
-    public void flush(String table, org.apache.thrift.async.AsyncMethodCallback<flush_call> resultHandler) throws org.apache.thrift.TException {
+    public void flush(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<flush_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      flush_call method_call = new flush_call(table, resultHandler, this, protocolFactory, transport);
+      flush_call method_call = new flush_call(db, coll, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class flush_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
-      public flush_call(String table, org.apache.thrift.async.AsyncMethodCallback<flush_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String db;
+      private String coll;
+      public flush_call(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<flush_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("flush", org.apache.thrift.protocol.TMessageType.CALL, 0));
         flush_args args = new flush_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -839,27 +872,33 @@ public class TableCursorService {
       }
     }
 
-    public void ensureIndex(String table, String path, org.apache.thrift.async.AsyncMethodCallback<ensureIndex_call> resultHandler) throws org.apache.thrift.TException {
+    public void ensureIndex(String db, String coll, String obj, boolean drop, org.apache.thrift.async.AsyncMethodCallback<ensureIndex_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      ensureIndex_call method_call = new ensureIndex_call(table, path, resultHandler, this, protocolFactory, transport);
+      ensureIndex_call method_call = new ensureIndex_call(db, coll, obj, drop, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class ensureIndex_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
-      private String path;
-      public ensureIndex_call(String table, String path, org.apache.thrift.async.AsyncMethodCallback<ensureIndex_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String db;
+      private String coll;
+      private String obj;
+      private boolean drop;
+      public ensureIndex_call(String db, String coll, String obj, boolean drop, org.apache.thrift.async.AsyncMethodCallback<ensureIndex_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
-        this.path = path;
+        this.db = db;
+        this.coll = coll;
+        this.obj = obj;
+        this.drop = drop;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("ensureIndex", org.apache.thrift.protocol.TMessageType.CALL, 0));
         ensureIndex_args args = new ensureIndex_args();
-        args.setTable(table);
-        args.setPath(path);
+        args.setDb(db);
+        args.setColl(coll);
+        args.setObj(obj);
+        args.setDrop(drop);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -874,27 +913,30 @@ public class TableCursorService {
       }
     }
 
-    public void dropIndex(String table, String path, org.apache.thrift.async.AsyncMethodCallback<dropIndex_call> resultHandler) throws org.apache.thrift.TException {
+    public void dropIndex(String db, String coll, String obj, org.apache.thrift.async.AsyncMethodCallback<dropIndex_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      dropIndex_call method_call = new dropIndex_call(table, path, resultHandler, this, protocolFactory, transport);
+      dropIndex_call method_call = new dropIndex_call(db, coll, obj, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class dropIndex_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
-      private String path;
-      public dropIndex_call(String table, String path, org.apache.thrift.async.AsyncMethodCallback<dropIndex_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String db;
+      private String coll;
+      private String obj;
+      public dropIndex_call(String db, String coll, String obj, org.apache.thrift.async.AsyncMethodCallback<dropIndex_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
-        this.path = path;
+        this.db = db;
+        this.coll = coll;
+        this.obj = obj;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("dropIndex", org.apache.thrift.protocol.TMessageType.CALL, 0));
         dropIndex_args args = new dropIndex_args();
-        args.setTable(table);
-        args.setPath(path);
+        args.setDb(db);
+        args.setColl(coll);
+        args.setObj(obj);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -909,24 +951,27 @@ public class TableCursorService {
       }
     }
 
-    public void compact(String table, org.apache.thrift.async.AsyncMethodCallback<compact_call> resultHandler) throws org.apache.thrift.TException {
+    public void compact(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<compact_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      compact_call method_call = new compact_call(table, resultHandler, this, protocolFactory, transport);
+      compact_call method_call = new compact_call(db, coll, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class compact_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
-      public compact_call(String table, org.apache.thrift.async.AsyncMethodCallback<compact_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String db;
+      private String coll;
+      public compact_call(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<compact_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("compact", org.apache.thrift.protocol.TMessageType.CALL, 0));
         compact_args args = new compact_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -941,24 +986,27 @@ public class TableCursorService {
       }
     }
 
-    public void drop(String table, org.apache.thrift.async.AsyncMethodCallback<drop_call> resultHandler) throws org.apache.thrift.TException {
+    public void drop(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<drop_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      drop_call method_call = new drop_call(table, resultHandler, this, protocolFactory, transport);
+      drop_call method_call = new drop_call(db, coll, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class drop_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
-      public drop_call(String table, org.apache.thrift.async.AsyncMethodCallback<drop_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String db;
+      private String coll;
+      public drop_call(String db, String coll, org.apache.thrift.async.AsyncMethodCallback<drop_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
+        this.db = db;
+        this.coll = coll;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("drop", org.apache.thrift.protocol.TMessageType.CALL, 0));
         drop_args args = new drop_args();
-        args.setTable(table);
+        args.setDb(db);
+        args.setColl(coll);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -1069,7 +1117,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         insertBatch_result result = new insertBatch_result();
         try {
-          iface_.insertBatch(args.table, args.json);
+          iface_.insertBatch(args.db, args.coll, args.json);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1107,7 +1155,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         update_result result = new update_result();
         try {
-          iface_.update(args.table, args.query, args.mods);
+          iface_.update(args.db, args.coll, args.query, args.mods);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1145,7 +1193,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         find_result result = new find_result();
         try {
-          result.success = iface_.find(args.table, args.query, args.select);
+          result.success = iface_.find(args.db, args.coll, args.query, args.select);
           result.setSuccessIsSet(true);
         } catch (JaccsonException e) {
           result.e = e;
@@ -1184,7 +1232,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         findOne_result result = new findOne_result();
         try {
-          result.success = iface_.findOne(args.table, args.query, args.select);
+          result.success = iface_.findOne(args.db, args.coll, args.query, args.select);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1222,7 +1270,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         get_result result = new get_result();
         try {
-          result.success = iface_.get(args.table, args.oid);
+          result.success = iface_.get(args.db, args.coll, args.oid);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1260,7 +1308,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         remove_result result = new remove_result();
         try {
-          iface_.remove(args.table, args.query);
+          iface_.remove(args.db, args.coll, args.query);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1298,7 +1346,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         flush_result result = new flush_result();
         try {
-          iface_.flush(args.table);
+          iface_.flush(args.db, args.coll);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1336,7 +1384,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         ensureIndex_result result = new ensureIndex_result();
         try {
-          iface_.ensureIndex(args.table, args.path);
+          iface_.ensureIndex(args.db, args.coll, args.obj, args.drop);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1374,7 +1422,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         dropIndex_result result = new dropIndex_result();
         try {
-          iface_.dropIndex(args.table, args.path);
+          iface_.dropIndex(args.db, args.coll, args.obj);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1412,7 +1460,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         compact_result result = new compact_result();
         try {
-          iface_.compact(args.table);
+          iface_.compact(args.db, args.coll);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1450,7 +1498,7 @@ public class TableCursorService {
         iprot.readMessageEnd();
         drop_result result = new drop_result();
         try {
-          iface_.drop(args.table);
+          iface_.drop(args.db, args.coll);
         } catch (JaccsonException e) {
           result.e = e;
         } catch (Throwable th) {
@@ -1513,16 +1561,19 @@ public class TableCursorService {
   public static class insertBatch_args implements org.apache.thrift.TBase<insertBatch_args, insertBatch_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("insertBatch_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField JSON_FIELD_DESC = new org.apache.thrift.protocol.TField("json", org.apache.thrift.protocol.TType.LIST, (short)2);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField JSON_FIELD_DESC = new org.apache.thrift.protocol.TField("json", org.apache.thrift.protocol.TType.LIST, (short)3);
 
-    public String table;
+    public String db;
+    public String coll;
     public List<String> json;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      JSON((short)2, "json");
+      DB((short)1, "db"),
+      COLL((short)2, "coll"),
+      JSON((short)3, "json");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -1537,9 +1588,11 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // JSON
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
+          case 3: // JSON
             return JSON;
           default:
             return null;
@@ -1585,7 +1638,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.JSON, new org.apache.thrift.meta_data.FieldMetaData("json", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
@@ -1598,11 +1653,13 @@ public class TableCursorService {
     }
 
     public insertBatch_args(
-      String table,
+      String db,
+      String coll,
       List<String> json)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
       this.json = json;
     }
 
@@ -1610,8 +1667,11 @@ public class TableCursorService {
      * Performs a deep copy on <i>other</i>.
      */
     public insertBatch_args(insertBatch_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
       if (other.isSetJson()) {
         List<String> __this__json = new ArrayList<String>();
@@ -1628,31 +1688,56 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
       this.json = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public insertBatch_args setTable(String table) {
-      this.table = table;
+    public insertBatch_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public insertBatch_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
@@ -1697,11 +1782,19 @@ public class TableCursorService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -1718,8 +1811,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       case JSON:
         return getJson();
@@ -1735,8 +1831,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       case JSON:
         return isSetJson();
       }
@@ -1756,12 +1854,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -1790,12 +1897,22 @@ public class TableCursorService {
       int lastComparison = 0;
       insertBatch_args typedOther = (insertBatch_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -1827,14 +1944,21 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // JSON
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // JSON
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
@@ -1866,9 +1990,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       if (this.json != null) {
@@ -1892,11 +2021,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("insertBatch_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -2233,19 +2370,22 @@ public class TableCursorService {
   public static class update_args implements org.apache.thrift.TBase<update_args, update_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("update_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField MODS_FIELD_DESC = new org.apache.thrift.protocol.TField("mods", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField MODS_FIELD_DESC = new org.apache.thrift.protocol.TField("mods", org.apache.thrift.protocol.TType.STRING, (short)4);
 
-    public String table;
+    public String db;
+    public String coll;
     public String query;
     public String mods;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      QUERY((short)2, "query"),
-      MODS((short)3, "mods");
+      DB((short)1, "db"),
+      COLL((short)2, "coll"),
+      QUERY((short)3, "query"),
+      MODS((short)4, "mods");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -2260,11 +2400,13 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // QUERY
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
+          case 3: // QUERY
             return QUERY;
-          case 3: // MODS
+          case 4: // MODS
             return MODS;
           default:
             return null;
@@ -2310,7 +2452,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -2324,12 +2468,14 @@ public class TableCursorService {
     }
 
     public update_args(
-      String table,
+      String db,
+      String coll,
       String query,
       String mods)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
       this.query = query;
       this.mods = mods;
     }
@@ -2338,8 +2484,11 @@ public class TableCursorService {
      * Performs a deep copy on <i>other</i>.
      */
     public update_args(update_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
       if (other.isSetQuery()) {
         this.query = other.query;
@@ -2355,32 +2504,57 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
       this.query = null;
       this.mods = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public update_args setTable(String table) {
-      this.table = table;
+    public update_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public update_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
@@ -2434,11 +2608,19 @@ public class TableCursorService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -2463,8 +2645,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       case QUERY:
         return getQuery();
@@ -2483,8 +2668,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       case QUERY:
         return isSetQuery();
       case MODS:
@@ -2506,12 +2693,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -2549,12 +2745,22 @@ public class TableCursorService {
       int lastComparison = 0;
       update_args typedOther = (update_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -2596,21 +2802,28 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // QUERY
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // QUERY
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.query = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 3: // MODS
+          case 4: // MODS
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.mods = iprot.readString();
             } else { 
@@ -2632,9 +2845,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       if (this.query != null) {
@@ -2656,11 +2874,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("update_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -3005,19 +3231,22 @@ public class TableCursorService {
   public static class find_args implements org.apache.thrift.TBase<find_args, find_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("find_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField SELECT_FIELD_DESC = new org.apache.thrift.protocol.TField("select", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField SELECT_FIELD_DESC = new org.apache.thrift.protocol.TField("select", org.apache.thrift.protocol.TType.STRING, (short)4);
 
-    public String table;
+    public String db;
+    public String coll;
     public String query;
     public String select;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      QUERY((short)2, "query"),
-      SELECT((short)3, "select");
+      DB((short)1, "db"),
+      COLL((short)2, "coll"),
+      QUERY((short)3, "query"),
+      SELECT((short)4, "select");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -3032,11 +3261,13 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // QUERY
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
+          case 3: // QUERY
             return QUERY;
-          case 3: // SELECT
+          case 4: // SELECT
             return SELECT;
           default:
             return null;
@@ -3082,7 +3313,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -3096,12 +3329,14 @@ public class TableCursorService {
     }
 
     public find_args(
-      String table,
+      String db,
+      String coll,
       String query,
       String select)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
       this.query = query;
       this.select = select;
     }
@@ -3110,8 +3345,11 @@ public class TableCursorService {
      * Performs a deep copy on <i>other</i>.
      */
     public find_args(find_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
       if (other.isSetQuery()) {
         this.query = other.query;
@@ -3127,32 +3365,57 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
       this.query = null;
       this.select = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public find_args setTable(String table) {
-      this.table = table;
+    public find_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public find_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
@@ -3206,11 +3469,19 @@ public class TableCursorService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -3235,8 +3506,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       case QUERY:
         return getQuery();
@@ -3255,8 +3529,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       case QUERY:
         return isSetQuery();
       case SELECT:
@@ -3278,12 +3554,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -3321,12 +3606,22 @@ public class TableCursorService {
       int lastComparison = 0;
       find_args typedOther = (find_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -3368,21 +3663,28 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // QUERY
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // QUERY
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.query = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 3: // SELECT
+          case 4: // SELECT
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.select = iprot.readString();
             } else { 
@@ -3404,9 +3706,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       if (this.query != null) {
@@ -3428,11 +3735,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("find_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -3854,8 +4169,6 @@ public class TableCursorService {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -3867,19 +4180,22 @@ public class TableCursorService {
   public static class findOne_args implements org.apache.thrift.TBase<findOne_args, findOne_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("findOne_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField SELECT_FIELD_DESC = new org.apache.thrift.protocol.TField("select", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField SELECT_FIELD_DESC = new org.apache.thrift.protocol.TField("select", org.apache.thrift.protocol.TType.STRING, (short)4);
 
-    public String table;
+    public String db;
+    public String coll;
     public String query;
     public String select;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      QUERY((short)2, "query"),
-      SELECT((short)3, "select");
+      DB((short)1, "db"),
+      COLL((short)2, "coll"),
+      QUERY((short)3, "query"),
+      SELECT((short)4, "select");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -3894,11 +4210,13 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // QUERY
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
+          case 3: // QUERY
             return QUERY;
-          case 3: // SELECT
+          case 4: // SELECT
             return SELECT;
           default:
             return null;
@@ -3944,7 +4262,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -3958,12 +4278,14 @@ public class TableCursorService {
     }
 
     public findOne_args(
-      String table,
+      String db,
+      String coll,
       String query,
       String select)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
       this.query = query;
       this.select = select;
     }
@@ -3972,8 +4294,11 @@ public class TableCursorService {
      * Performs a deep copy on <i>other</i>.
      */
     public findOne_args(findOne_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
       if (other.isSetQuery()) {
         this.query = other.query;
@@ -3989,32 +4314,57 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
       this.query = null;
       this.select = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public findOne_args setTable(String table) {
-      this.table = table;
+    public findOne_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public findOne_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
@@ -4068,11 +4418,19 @@ public class TableCursorService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -4097,8 +4455,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       case QUERY:
         return getQuery();
@@ -4117,8 +4478,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       case QUERY:
         return isSetQuery();
       case SELECT:
@@ -4140,12 +4503,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -4183,12 +4555,22 @@ public class TableCursorService {
       int lastComparison = 0;
       findOne_args typedOther = (findOne_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -4230,21 +4612,28 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // QUERY
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // QUERY
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.query = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 3: // SELECT
+          case 4: // SELECT
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.select = iprot.readString();
             } else { 
@@ -4266,9 +4655,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       if (this.query != null) {
@@ -4290,11 +4684,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("findOne_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -4727,16 +5129,19 @@ public class TableCursorService {
   public static class get_args implements org.apache.thrift.TBase<get_args, get_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("get_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField OID_FIELD_DESC = new org.apache.thrift.protocol.TField("oid", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField OID_FIELD_DESC = new org.apache.thrift.protocol.TField("oid", org.apache.thrift.protocol.TType.STRING, (short)3);
 
-    public String table;
+    public String db;
+    public String coll;
     public String oid;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      OID((short)2, "oid");
+      DB((short)1, "db"),
+      COLL((short)2, "coll"),
+      OID((short)3, "oid");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4751,9 +5156,11 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // OID
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
+          case 3: // OID
             return OID;
           default:
             return null;
@@ -4799,7 +5206,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.OID, new org.apache.thrift.meta_data.FieldMetaData("oid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -4811,11 +5220,13 @@ public class TableCursorService {
     }
 
     public get_args(
-      String table,
+      String db,
+      String coll,
       String oid)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
       this.oid = oid;
     }
 
@@ -4823,8 +5234,11 @@ public class TableCursorService {
      * Performs a deep copy on <i>other</i>.
      */
     public get_args(get_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
       if (other.isSetOid()) {
         this.oid = other.oid;
@@ -4837,31 +5251,56 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
       this.oid = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public get_args setTable(String table) {
-      this.table = table;
+    public get_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public get_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
@@ -4891,11 +5330,19 @@ public class TableCursorService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -4912,8 +5359,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       case OID:
         return getOid();
@@ -4929,8 +5379,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       case OID:
         return isSetOid();
       }
@@ -4950,12 +5402,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -4984,12 +5445,22 @@ public class TableCursorService {
       int lastComparison = 0;
       get_args typedOther = (get_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5021,14 +5492,21 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // OID
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // OID
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.oid = iprot.readString();
             } else { 
@@ -5050,9 +5528,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       if (this.oid != null) {
@@ -5069,11 +5552,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("get_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -5498,16 +5989,19 @@ public class TableCursorService {
   public static class remove_args implements org.apache.thrift.TBase<remove_args, remove_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("remove_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)3);
 
-    public String table;
+    public String db;
+    public String coll;
     public String query;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      QUERY((short)2, "query");
+      DB((short)1, "db"),
+      COLL((short)2, "coll"),
+      QUERY((short)3, "query");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5522,9 +6016,11 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // QUERY
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
+          case 3: // QUERY
             return QUERY;
           default:
             return null;
@@ -5570,7 +6066,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -5582,11 +6080,13 @@ public class TableCursorService {
     }
 
     public remove_args(
-      String table,
+      String db,
+      String coll,
       String query)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
       this.query = query;
     }
 
@@ -5594,8 +6094,11 @@ public class TableCursorService {
      * Performs a deep copy on <i>other</i>.
      */
     public remove_args(remove_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
       if (other.isSetQuery()) {
         this.query = other.query;
@@ -5608,31 +6111,56 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
       this.query = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public remove_args setTable(String table) {
-      this.table = table;
+    public remove_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public remove_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
@@ -5662,11 +6190,19 @@ public class TableCursorService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -5683,8 +6219,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       case QUERY:
         return getQuery();
@@ -5700,8 +6239,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       case QUERY:
         return isSetQuery();
       }
@@ -5721,12 +6262,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -5755,12 +6305,22 @@ public class TableCursorService {
       int lastComparison = 0;
       remove_args typedOther = (remove_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5792,14 +6352,21 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // QUERY
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // QUERY
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.query = iprot.readString();
             } else { 
@@ -5821,9 +6388,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       if (this.query != null) {
@@ -5840,11 +6412,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("remove_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -6181,13 +6761,16 @@ public class TableCursorService {
   public static class flush_args implements org.apache.thrift.TBase<flush_args, flush_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("flush_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
 
-    public String table;
+    public String db;
+    public String coll;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table");
+      DB((short)1, "db"),
+      COLL((short)2, "coll");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -6202,8 +6785,10 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
           default:
             return null;
         }
@@ -6248,7 +6833,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(flush_args.class, metaDataMap);
@@ -6258,18 +6845,23 @@ public class TableCursorService {
     }
 
     public flush_args(
-      String table)
+      String db,
+      String coll)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public flush_args(flush_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
     }
 
@@ -6279,40 +6871,73 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public flush_args setTable(String table) {
-      this.table = table;
+    public flush_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public flush_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -6321,8 +6946,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       }
       throw new IllegalStateException();
@@ -6335,8 +6963,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       }
       throw new IllegalStateException();
     }
@@ -6354,12 +6984,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -6379,12 +7018,22 @@ public class TableCursorService {
       int lastComparison = 0;
       flush_args typedOther = (flush_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -6406,9 +7055,16 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -6428,9 +7084,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -6442,11 +7103,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("flush_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       sb.append(")");
@@ -6775,16 +7444,22 @@ public class TableCursorService {
   public static class ensureIndex_args implements org.apache.thrift.TBase<ensureIndex_args, ensureIndex_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ensureIndex_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("path", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField OBJ_FIELD_DESC = new org.apache.thrift.protocol.TField("obj", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField DROP_FIELD_DESC = new org.apache.thrift.protocol.TField("drop", org.apache.thrift.protocol.TType.BOOL, (short)4);
 
-    public String table;
-    public String path;
+    public String db;
+    public String coll;
+    public String obj;
+    public boolean drop;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      PATH((short)2, "path");
+      DB((short)1, "db"),
+      COLL((short)2, "coll"),
+      OBJ((short)3, "obj"),
+      DROP((short)4, "drop");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -6799,10 +7474,14 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // PATH
-            return PATH;
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
+          case 3: // OBJ
+            return OBJ;
+          case 4: // DROP
+            return DROP;
           default:
             return null;
         }
@@ -6843,14 +7522,20 @@ public class TableCursorService {
     }
 
     // isset id assignments
+    private static final int __DROP_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PATH, new org.apache.thrift.meta_data.FieldMetaData("path", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.OBJ, new org.apache.thrift.meta_data.FieldMetaData("obj", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.DROP, new org.apache.thrift.meta_data.FieldMetaData("drop", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ensureIndex_args.class, metaDataMap);
     }
@@ -6859,24 +7544,35 @@ public class TableCursorService {
     }
 
     public ensureIndex_args(
-      String table,
-      String path)
+      String db,
+      String coll,
+      String obj,
+      boolean drop)
     {
       this();
-      this.table = table;
-      this.path = path;
+      this.db = db;
+      this.coll = coll;
+      this.obj = obj;
+      this.drop = drop;
+      setDropIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public ensureIndex_args(ensureIndex_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      if (other.isSetDb()) {
+        this.db = other.db;
       }
-      if (other.isSetPath()) {
-        this.path = other.path;
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
+      if (other.isSetObj()) {
+        this.obj = other.obj;
+      }
+      this.drop = other.drop;
     }
 
     public ensureIndex_args deepCopy() {
@@ -6885,73 +7581,139 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
-      this.path = null;
+      this.db = null;
+      this.coll = null;
+      this.obj = null;
+      setDropIsSet(false);
+      this.drop = false;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public ensureIndex_args setTable(String table) {
-      this.table = table;
+    public ensureIndex_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
       }
     }
 
-    public String getPath() {
-      return this.path;
+    public String getColl() {
+      return this.coll;
     }
 
-    public ensureIndex_args setPath(String path) {
-      this.path = path;
+    public ensureIndex_args setColl(String coll) {
+      this.coll = coll;
       return this;
     }
 
-    public void unsetPath() {
-      this.path = null;
+    public void unsetColl() {
+      this.coll = null;
     }
 
-    /** Returns true if field path is set (has been assigned a value) and false otherwise */
-    public boolean isSetPath() {
-      return this.path != null;
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
     }
 
-    public void setPathIsSet(boolean value) {
+    public void setCollIsSet(boolean value) {
       if (!value) {
-        this.path = null;
+        this.coll = null;
       }
+    }
+
+    public String getObj() {
+      return this.obj;
+    }
+
+    public ensureIndex_args setObj(String obj) {
+      this.obj = obj;
+      return this;
+    }
+
+    public void unsetObj() {
+      this.obj = null;
+    }
+
+    /** Returns true if field obj is set (has been assigned a value) and false otherwise */
+    public boolean isSetObj() {
+      return this.obj != null;
+    }
+
+    public void setObjIsSet(boolean value) {
+      if (!value) {
+        this.obj = null;
+      }
+    }
+
+    public boolean isDrop() {
+      return this.drop;
+    }
+
+    public ensureIndex_args setDrop(boolean drop) {
+      this.drop = drop;
+      setDropIsSet(true);
+      return this;
+    }
+
+    public void unsetDrop() {
+      __isset_bit_vector.clear(__DROP_ISSET_ID);
+    }
+
+    /** Returns true if field drop is set (has been assigned a value) and false otherwise */
+    public boolean isSetDrop() {
+      return __isset_bit_vector.get(__DROP_ISSET_ID);
+    }
+
+    public void setDropIsSet(boolean value) {
+      __isset_bit_vector.set(__DROP_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
         }
         break;
 
-      case PATH:
+      case COLL:
         if (value == null) {
-          unsetPath();
+          unsetColl();
         } else {
-          setPath((String)value);
+          setColl((String)value);
+        }
+        break;
+
+      case OBJ:
+        if (value == null) {
+          unsetObj();
+        } else {
+          setObj((String)value);
+        }
+        break;
+
+      case DROP:
+        if (value == null) {
+          unsetDrop();
+        } else {
+          setDrop((Boolean)value);
         }
         break;
 
@@ -6960,11 +7722,17 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
 
-      case PATH:
-        return getPath();
+      case COLL:
+        return getColl();
+
+      case OBJ:
+        return getObj();
+
+      case DROP:
+        return new Boolean(isDrop());
 
       }
       throw new IllegalStateException();
@@ -6977,10 +7745,14 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
-      case PATH:
-        return isSetPath();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
+      case OBJ:
+        return isSetObj();
+      case DROP:
+        return isSetDrop();
       }
       throw new IllegalStateException();
     }
@@ -6998,21 +7770,39 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
           return false;
       }
 
-      boolean this_present_path = true && this.isSetPath();
-      boolean that_present_path = true && that.isSetPath();
-      if (this_present_path || that_present_path) {
-        if (!(this_present_path && that_present_path))
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
           return false;
-        if (!this.path.equals(that.path))
+        if (!this.coll.equals(that.coll))
+          return false;
+      }
+
+      boolean this_present_obj = true && this.isSetObj();
+      boolean that_present_obj = true && that.isSetObj();
+      if (this_present_obj || that_present_obj) {
+        if (!(this_present_obj && that_present_obj))
+          return false;
+        if (!this.obj.equals(that.obj))
+          return false;
+      }
+
+      boolean this_present_drop = true;
+      boolean that_present_drop = true;
+      if (this_present_drop || that_present_drop) {
+        if (!(this_present_drop && that_present_drop))
+          return false;
+        if (this.drop != that.drop)
           return false;
       }
 
@@ -7032,22 +7822,42 @@ public class TableCursorService {
       int lastComparison = 0;
       ensureIndex_args typedOther = (ensureIndex_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetPath()).compareTo(typedOther.isSetPath());
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetPath()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.path, typedOther.path);
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetObj()).compareTo(typedOther.isSetObj());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetObj()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.obj, typedOther.obj);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetDrop()).compareTo(typedOther.isSetDrop());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDrop()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.drop, typedOther.drop);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -7069,16 +7879,31 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // PATH
+          case 2: // COLL
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.path = iprot.readString();
+              this.coll = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // OBJ
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.obj = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // DROP
+            if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+              this.drop = iprot.readBool();
+              setDropIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -7098,16 +7923,24 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
         oprot.writeFieldEnd();
       }
-      if (this.path != null) {
-        oprot.writeFieldBegin(PATH_FIELD_DESC);
-        oprot.writeString(this.path);
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
+      if (this.obj != null) {
+        oprot.writeFieldBegin(OBJ_FIELD_DESC);
+        oprot.writeString(this.obj);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(DROP_FIELD_DESC);
+      oprot.writeBool(this.drop);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -7117,20 +7950,32 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("ensureIndex_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("path:");
-      if (this.path == null) {
+      sb.append("coll:");
+      if (this.coll == null) {
         sb.append("null");
       } else {
-        sb.append(this.path);
+        sb.append(this.coll);
       }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("obj:");
+      if (this.obj == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.obj);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("drop:");
+      sb.append(this.drop);
       first = false;
       sb.append(")");
       return sb.toString();
@@ -7150,6 +7995,8 @@ public class TableCursorService {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -7458,16 +8305,19 @@ public class TableCursorService {
   public static class dropIndex_args implements org.apache.thrift.TBase<dropIndex_args, dropIndex_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("dropIndex_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("path", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField OBJ_FIELD_DESC = new org.apache.thrift.protocol.TField("obj", org.apache.thrift.protocol.TType.STRING, (short)3);
 
-    public String table;
-    public String path;
+    public String db;
+    public String coll;
+    public String obj;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      PATH((short)2, "path");
+      DB((short)1, "db"),
+      COLL((short)2, "coll"),
+      OBJ((short)3, "obj");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7482,10 +8332,12 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // PATH
-            return PATH;
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
+          case 3: // OBJ
+            return OBJ;
           default:
             return null;
         }
@@ -7530,9 +8382,11 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PATH, new org.apache.thrift.meta_data.FieldMetaData("path", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.OBJ, new org.apache.thrift.meta_data.FieldMetaData("obj", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(dropIndex_args.class, metaDataMap);
@@ -7542,23 +8396,28 @@ public class TableCursorService {
     }
 
     public dropIndex_args(
-      String table,
-      String path)
+      String db,
+      String coll,
+      String obj)
     {
       this();
-      this.table = table;
-      this.path = path;
+      this.db = db;
+      this.coll = coll;
+      this.obj = obj;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public dropIndex_args(dropIndex_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
       }
-      if (other.isSetPath()) {
-        this.path = other.path;
+      if (other.isSetColl()) {
+        this.coll = other.coll;
+      }
+      if (other.isSetObj()) {
+        this.obj = other.obj;
       }
     }
 
@@ -7568,73 +8427,106 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
-      this.path = null;
+      this.db = null;
+      this.coll = null;
+      this.obj = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public dropIndex_args setTable(String table) {
-      this.table = table;
+    public dropIndex_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
       }
     }
 
-    public String getPath() {
-      return this.path;
+    public String getColl() {
+      return this.coll;
     }
 
-    public dropIndex_args setPath(String path) {
-      this.path = path;
+    public dropIndex_args setColl(String coll) {
+      this.coll = coll;
       return this;
     }
 
-    public void unsetPath() {
-      this.path = null;
+    public void unsetColl() {
+      this.coll = null;
     }
 
-    /** Returns true if field path is set (has been assigned a value) and false otherwise */
-    public boolean isSetPath() {
-      return this.path != null;
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
     }
 
-    public void setPathIsSet(boolean value) {
+    public void setCollIsSet(boolean value) {
       if (!value) {
-        this.path = null;
+        this.coll = null;
+      }
+    }
+
+    public String getObj() {
+      return this.obj;
+    }
+
+    public dropIndex_args setObj(String obj) {
+      this.obj = obj;
+      return this;
+    }
+
+    public void unsetObj() {
+      this.obj = null;
+    }
+
+    /** Returns true if field obj is set (has been assigned a value) and false otherwise */
+    public boolean isSetObj() {
+      return this.obj != null;
+    }
+
+    public void setObjIsSet(boolean value) {
+      if (!value) {
+        this.obj = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
         }
         break;
 
-      case PATH:
+      case COLL:
         if (value == null) {
-          unsetPath();
+          unsetColl();
         } else {
-          setPath((String)value);
+          setColl((String)value);
+        }
+        break;
+
+      case OBJ:
+        if (value == null) {
+          unsetObj();
+        } else {
+          setObj((String)value);
         }
         break;
 
@@ -7643,11 +8535,14 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
 
-      case PATH:
-        return getPath();
+      case COLL:
+        return getColl();
+
+      case OBJ:
+        return getObj();
 
       }
       throw new IllegalStateException();
@@ -7660,10 +8555,12 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
-      case PATH:
-        return isSetPath();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
+      case OBJ:
+        return isSetObj();
       }
       throw new IllegalStateException();
     }
@@ -7681,21 +8578,30 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
           return false;
       }
 
-      boolean this_present_path = true && this.isSetPath();
-      boolean that_present_path = true && that.isSetPath();
-      if (this_present_path || that_present_path) {
-        if (!(this_present_path && that_present_path))
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
           return false;
-        if (!this.path.equals(that.path))
+        if (!this.coll.equals(that.coll))
+          return false;
+      }
+
+      boolean this_present_obj = true && this.isSetObj();
+      boolean that_present_obj = true && that.isSetObj();
+      if (this_present_obj || that_present_obj) {
+        if (!(this_present_obj && that_present_obj))
+          return false;
+        if (!this.obj.equals(that.obj))
           return false;
       }
 
@@ -7715,22 +8621,32 @@ public class TableCursorService {
       int lastComparison = 0;
       dropIndex_args typedOther = (dropIndex_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetPath()).compareTo(typedOther.isSetPath());
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetPath()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.path, typedOther.path);
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetObj()).compareTo(typedOther.isSetObj());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetObj()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.obj, typedOther.obj);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -7752,16 +8668,23 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // PATH
+          case 2: // COLL
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.path = iprot.readString();
+              this.coll = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // OBJ
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.obj = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -7781,14 +8704,19 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
         oprot.writeFieldEnd();
       }
-      if (this.path != null) {
-        oprot.writeFieldBegin(PATH_FIELD_DESC);
-        oprot.writeString(this.path);
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
+        oprot.writeFieldEnd();
+      }
+      if (this.obj != null) {
+        oprot.writeFieldBegin(OBJ_FIELD_DESC);
+        oprot.writeString(this.obj);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -7800,19 +8728,27 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("dropIndex_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("path:");
-      if (this.path == null) {
+      sb.append("coll:");
+      if (this.coll == null) {
         sb.append("null");
       } else {
-        sb.append(this.path);
+        sb.append(this.coll);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("obj:");
+      if (this.obj == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.obj);
       }
       first = false;
       sb.append(")");
@@ -8141,13 +9077,16 @@ public class TableCursorService {
   public static class compact_args implements org.apache.thrift.TBase<compact_args, compact_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("compact_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
 
-    public String table;
+    public String db;
+    public String coll;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table");
+      DB((short)1, "db"),
+      COLL((short)2, "coll");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -8162,8 +9101,10 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
           default:
             return null;
         }
@@ -8208,7 +9149,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(compact_args.class, metaDataMap);
@@ -8218,18 +9161,23 @@ public class TableCursorService {
     }
 
     public compact_args(
-      String table)
+      String db,
+      String coll)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public compact_args(compact_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
     }
 
@@ -8239,40 +9187,73 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public compact_args setTable(String table) {
-      this.table = table;
+    public compact_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public compact_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -8281,8 +9262,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       }
       throw new IllegalStateException();
@@ -8295,8 +9279,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       }
       throw new IllegalStateException();
     }
@@ -8314,12 +9300,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -8339,12 +9334,22 @@ public class TableCursorService {
       int lastComparison = 0;
       compact_args typedOther = (compact_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8366,9 +9371,16 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -8388,9 +9400,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -8402,11 +9419,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("compact_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       sb.append(")");
@@ -8735,13 +9760,16 @@ public class TableCursorService {
   public static class drop_args implements org.apache.thrift.TBase<drop_args, drop_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("drop_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField DB_FIELD_DESC = new org.apache.thrift.protocol.TField("db", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COLL_FIELD_DESC = new org.apache.thrift.protocol.TField("coll", org.apache.thrift.protocol.TType.STRING, (short)2);
 
-    public String table;
+    public String db;
+    public String coll;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table");
+      DB((short)1, "db"),
+      COLL((short)2, "coll");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -8756,8 +9784,10 @@ public class TableCursorService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
+          case 1: // DB
+            return DB;
+          case 2: // COLL
+            return COLL;
           default:
             return null;
         }
@@ -8802,7 +9832,9 @@ public class TableCursorService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COLL, new org.apache.thrift.meta_data.FieldMetaData("coll", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_args.class, metaDataMap);
@@ -8812,18 +9844,23 @@ public class TableCursorService {
     }
 
     public drop_args(
-      String table)
+      String db,
+      String coll)
     {
       this();
-      this.table = table;
+      this.db = db;
+      this.coll = coll;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public drop_args(drop_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
+      if (other.isSetDb()) {
+        this.db = other.db;
+      }
+      if (other.isSetColl()) {
+        this.coll = other.coll;
       }
     }
 
@@ -8833,40 +9870,73 @@ public class TableCursorService {
 
     @Override
     public void clear() {
-      this.table = null;
+      this.db = null;
+      this.coll = null;
     }
 
-    public String getTable() {
-      return this.table;
+    public String getDb() {
+      return this.db;
     }
 
-    public drop_args setTable(String table) {
-      this.table = table;
+    public drop_args setDb(String db) {
+      this.db = db;
       return this;
     }
 
-    public void unsetTable() {
-      this.table = null;
+    public void unsetDb() {
+      this.db = null;
     }
 
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
+    /** Returns true if field db is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb() {
+      return this.db != null;
     }
 
-    public void setTableIsSet(boolean value) {
+    public void setDbIsSet(boolean value) {
       if (!value) {
-        this.table = null;
+        this.db = null;
+      }
+    }
+
+    public String getColl() {
+      return this.coll;
+    }
+
+    public drop_args setColl(String coll) {
+      this.coll = coll;
+      return this;
+    }
+
+    public void unsetColl() {
+      this.coll = null;
+    }
+
+    /** Returns true if field coll is set (has been assigned a value) and false otherwise */
+    public boolean isSetColl() {
+      return this.coll != null;
+    }
+
+    public void setCollIsSet(boolean value) {
+      if (!value) {
+        this.coll = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
+      case DB:
         if (value == null) {
-          unsetTable();
+          unsetDb();
         } else {
-          setTable((String)value);
+          setDb((String)value);
+        }
+        break;
+
+      case COLL:
+        if (value == null) {
+          unsetColl();
+        } else {
+          setColl((String)value);
         }
         break;
 
@@ -8875,8 +9945,11 @@ public class TableCursorService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
+      case DB:
+        return getDb();
+
+      case COLL:
+        return getColl();
 
       }
       throw new IllegalStateException();
@@ -8889,8 +9962,10 @@ public class TableCursorService {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
+      case DB:
+        return isSetDb();
+      case COLL:
+        return isSetColl();
       }
       throw new IllegalStateException();
     }
@@ -8908,12 +9983,21 @@ public class TableCursorService {
       if (that == null)
         return false;
 
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
+      boolean this_present_db = true && this.isSetDb();
+      boolean that_present_db = true && that.isSetDb();
+      if (this_present_db || that_present_db) {
+        if (!(this_present_db && that_present_db))
           return false;
-        if (!this.table.equals(that.table))
+        if (!this.db.equals(that.db))
+          return false;
+      }
+
+      boolean this_present_coll = true && this.isSetColl();
+      boolean that_present_coll = true && that.isSetColl();
+      if (this_present_coll || that_present_coll) {
+        if (!(this_present_coll && that_present_coll))
+          return false;
+        if (!this.coll.equals(that.coll))
           return false;
       }
 
@@ -8933,12 +10017,22 @@ public class TableCursorService {
       int lastComparison = 0;
       drop_args typedOther = (drop_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      lastComparison = Boolean.valueOf(isSetDb()).compareTo(typedOther.isSetDb());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetDb()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db, typedOther.db);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetColl()).compareTo(typedOther.isSetColl());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetColl()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.coll, typedOther.coll);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8960,9 +10054,16 @@ public class TableCursorService {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // DB
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
+              this.db = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // COLL
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.coll = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -8982,9 +10083,14 @@ public class TableCursorService {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
+      if (this.db != null) {
+        oprot.writeFieldBegin(DB_FIELD_DESC);
+        oprot.writeString(this.db);
+        oprot.writeFieldEnd();
+      }
+      if (this.coll != null) {
+        oprot.writeFieldBegin(COLL_FIELD_DESC);
+        oprot.writeString(this.coll);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -8996,11 +10102,19 @@ public class TableCursorService {
       StringBuilder sb = new StringBuilder("drop_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
+      sb.append("db:");
+      if (this.db == null) {
         sb.append("null");
       } else {
-        sb.append(this.table);
+        sb.append(this.db);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("coll:");
+      if (this.coll == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.coll);
       }
       first = false;
       sb.append(")");

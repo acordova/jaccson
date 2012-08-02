@@ -14,37 +14,41 @@ import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
+import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 
-import org.json.JSONObject;
+import com.jaccson.DB;
+import com.jaccson.DBCollection;
+import com.jaccson.DBCursor;
+import com.jaccson.Jaccson;
+import com.mongodb.DBObject;
 
-import com.jaccson.deprec.JaccsonConnection;
-import com.jaccson.deprec.JaccsonCursor;
-import com.jaccson.deprec.JaccsonTable;
 
 public class JaccsonProxy implements TableCursorService.Iface {
 
-	private HashMap<String, JaccsonTable> openTables;
-	private HashMap<Integer, JaccsonCursor> openCursors;
-	private JaccsonConnection conn;
+	private HashMap<String, DBCollection> openCollections;
+	private HashMap<Integer, DBCursor> openCursors;
+	private Jaccson conn;
 	private static final int BATCH_SIZE = 100;
 	private Random random = new Random();
+	private HashMap<String, DB> openDBs;
 
 	public JaccsonProxy(String zkServers, String instance, String user, String password, String auths) throws AccumuloException, AccumuloSecurityException {
-		openTables = new HashMap<String, JaccsonTable>();
-		openCursors = new HashMap<Integer, JaccsonCursor>();
+		openCollections = new HashMap<String, DBCollection>();
+		openDBs = new HashMap<String, DB>();
+		openCursors = new HashMap<Integer, DBCursor>();
 
-		conn = new JaccsonConnection(zkServers, instance, user, password, auths);
+		conn = new Jaccson(zkServers, instance, user, password, auths);
 	}
 	
-	// cursor methods
+	@Override
 	public List<String> nextBatch(int cursor) throws JaccsonException {
 
-		JaccsonCursor cur = openCursors.get(cursor);
+		DBCursor cur = openCursors.get(cursor);
 		ArrayList<String> batch = new ArrayList<String>();
 
 		while(cur.hasNext() && batch.size() < BATCH_SIZE) {
@@ -58,36 +62,38 @@ public class JaccsonProxy implements TableCursorService.Iface {
 		return batch;
 	}
 
-	// table methods
-	public void insertBatch(String table, List<String> json) throws JaccsonException {
+	@Override
+	public void insertBatch(String db, String coll, List<String> json) throws JaccsonException {
 		try {
-			JaccsonTable t = getTable(table, true);
+			DBCollection t = getCollection(db, coll, true);
 			
 			for(String j : json)
-				t.insert(new JSONObject(j));
+				t.insert(j);
 
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		} 
 	}
 
-	public void update(String table, String query, String mods) throws JaccsonException {
+	@Override
+	public void update(String db, String coll, String query, String mods) throws JaccsonException {
 		try {
-			JaccsonTable t = getTable(table, true);
-			t.update(new JSONObject(query), new JSONObject(mods));
+			DBCollection t = getCollection(db, coll, true);
+			t.update(query, mods);
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		}
 	}
 
-	public int find(String table, String query, String select)
+	@Override
+	public int find(String db, String coll, String query, String select)
 			throws JaccsonException {
 
 		try {
-			JaccsonTable t = getTable(table, false);
+			DBCollection t = getCollection(db, coll, false);
 
 
-			JaccsonCursor cursor = t.find(new JSONObject(query), new JSONObject(select));
+			DBCursor cursor = t.find(query, select);
 			// find a random label
 			int label;
 
@@ -110,26 +116,36 @@ public class JaccsonProxy implements TableCursorService.Iface {
 		}
 	}
 
-	private JaccsonTable getTable(String table, boolean create) throws TableNotFoundException, AccumuloException, AccumuloSecurityException, TableExistsException {
-
-		JaccsonTable t = null;
-		if(!openTables.containsKey(table)) {
-			System.err.println("opening new table " + table);
-			t = conn.getTable(table);
-			openTables.put(table, t);
+	private DB getDB(String dbname) {
+		
+		if(!openDBs.containsKey(dbname)) {
+			DB db = conn.getDB(dbname);
+			openDBs.put(dbname, db);
 		}
-		else {
-			t = openTables.get(table);
-		}
+		
+		return openDBs.get(dbname); 
+	}
+	
+	private DBCollection getCollection(String dbname, String collname, boolean create) throws TableNotFoundException, AccumuloException, AccumuloSecurityException, TableExistsException {
 
-		return t;
+		String fullname = dbname + "_" + collname;
+		
+		if(!openCollections.containsKey(fullname)) {
+			DB db = getDB(dbname);
+			System.err.println("opening new table " + fullname);
+			DBCollection c = db.getCollection(collname);
+			openCollections.put(fullname, c);
+		}
+		
+		return openCollections.get(fullname);
 	}
 
-	public String findOne(String table, String query, String select) throws JaccsonException {
+	@Override
+	public String findOne(String db, String coll, String query, String select) throws JaccsonException {
 
 		try {
-			JaccsonTable t = getTable(table, false);
-			JSONObject o = t.findOne(new JSONObject(query), new JSONObject(select));
+			DBCollection t = getCollection(db, coll, false);
+			DBObject o = t.findOne(query, select);
 			if(o != null)
 				return o.toString();
 
@@ -140,11 +156,12 @@ public class JaccsonProxy implements TableCursorService.Iface {
 		return null;
 	}
 
-	public String get(String table, String oid) throws JaccsonException {
+	@Override
+	public String get(String db, String coll, String oid) throws JaccsonException {
 
 		try {
-			JaccsonTable t = getTable(table, false);
-			JSONObject o = t.get(oid);
+			DBCollection t = getCollection(db, coll, false);
+			DBObject o = t.get(oid, (String)null);
 			if(o != null)
 				return o.toString();
 
@@ -155,63 +172,69 @@ public class JaccsonProxy implements TableCursorService.Iface {
 		return null;
 	}
 
-	public void remove(String table, String query) throws JaccsonException {
+	@Override
+	public void remove(String db, String coll, String query) throws JaccsonException {
 		try {
-			JaccsonTable t = getTable(table, false);
-			t.remove(new JSONObject(query));
+			DBCollection t = getCollection(db, coll, false);
+			t.remove(query);
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		}
 	}
 
-	public void close(String table) throws JaccsonException {
+	public void close(String db, String coll) throws JaccsonException {
 		// TODO: implement?
 	}
 
-	public void ensureIndex(String table, String path) throws JaccsonException {
+
+	@Override
+	public void ensureIndex(String db, String coll, String obj, boolean drop)
+			throws JaccsonException, TException {
 		try {
-			JaccsonTable t = getTable(table, true);
-			t.ensureIndex(new JSONObject(path));
-		} catch (Exception e) {
-			throw new JaccsonException(e.getMessage());
-		}
-
-	}
-
-	public void dropIndex(String table, String path) throws JaccsonException {
-		try {
-			JaccsonTable t = getTable(table, false);
-
-			t.dropIndex(new JSONObject(path));
-		} catch (Exception e) {
-			throw new JaccsonException(e.getMessage());
-		}
-
-	}
-
-	public void compact(String table) throws JaccsonException {
-		try {
-			JaccsonTable t = getTable(table, false);
-			t.compact();
-		} catch (Exception e) {
-			throw new JaccsonException(e.getMessage());
-		}
-	}
-
-	public void drop(String table) throws JaccsonException {
-		try {
-			conn.dropTable(table);
+			DBCollection t = getCollection(db, coll, true);
+			t.ensureIndex(obj);
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());
 		}
 	}
 
 	@Override
-	public void flush(String table) throws JaccsonException {
+	public void dropIndex(String db, String coll, String path) throws JaccsonException {
 		try {
-			JaccsonTable t = getTable(table, false);
+			DBCollection t = getCollection(db, coll, false);
+
+			t.dropIndex(path);
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
+		}
+
+	}
+
+	@Override
+	public void compact(String db, String coll) throws JaccsonException {
+		try {
+			DBCollection t = getCollection(db, coll, false);
+			t.compact();
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
+		}
+	}
+
+	@Override
+	public void drop(String db, String coll) throws JaccsonException {
+		try {
+			getCollection(db, coll, false).drop();
+		} catch (Exception e) {
+			throw new JaccsonException(e.getMessage());
+		}
+	}
+
+	@Override
+	public void flush(String db, String coll) throws JaccsonException {
+		try {
+			DBCollection t = getCollection(db, coll, false);
 			t.flush();
-			openTables.remove(table);
+			openCollections.remove(db + "_" + coll);
 
 		} catch (Exception e) {
 			throw new JaccsonException(e.getMessage());

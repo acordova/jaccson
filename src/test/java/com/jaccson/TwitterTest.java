@@ -3,22 +3,20 @@ package com.jaccson;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-/*import twitter4j.Status;
+import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
-import twitter4j.TwitterException;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.conf.ConfigurationBuilder;
-*/
-import com.jaccson.deprec.JaccsonConnection;
-import com.jaccson.deprec.JaccsonTable;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
+
 
 /**
  * <p>This is a code example of Twitter4J Streaming API - sample method support.<br>
@@ -28,48 +26,32 @@ import com.jaccson.deprec.JaccsonTable;
  * based on work by Twitter4j author  Yusuke Yamamoto - yusuke at mac.com
  */
 
-/*
+
 public class TwitterTest {
 
 
 	public static class TWriter implements StatusListener {
 
 
-		private JaccsonTable table;
+		private DBCollection coll;
 		private int numTweets = 0;
-		
-		public TWriter(JaccsonTable t) throws AccumuloException, AccumuloSecurityException, TableNotFoundException, TableExistsException {
-			table = t;
+
+		public TWriter(DBCollection c)  {
+			coll = c;
 		}
 
 		public void onStatus(Status status) {
 
-			JSONObject tweet = new JSONObject();
-			try {
-				
+			BasicDBObject tweet = new BasicDBObject();
 
-				tweet.put("screenname", status.getUser().getScreenName());
-				tweet.put("text", status.getText());
-				
+			tweet.put("screenname", status.getUser().getScreenName());
+			tweet.put("text", status.getText());
 
-				try {
-					table.insert(tweet.toString());
-					numTweets++;
-					if(numTweets % 100 == 0) {
-						table.flush();
-						System.out.println(numTweets);
-					}
-				} catch (MutationsRejectedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (TableNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			coll.insert(tweet.toString());
+			numTweets++;
+			if(numTweets % 100 == 0) {
+				coll.flush();
+				System.out.println(numTweets);
 			}
 
 			//System.out.println("@" + status.getUser().getScreenName() + " - " + status.getText());
@@ -100,30 +82,29 @@ public class TwitterTest {
 	 * @throws AccumuloException 
 	 * @throws TableExistsException 
 	 * @throws TableNotFoundException 
-	 * @throws JSONException 
-	 *
-	public static void main(String[] args) throws TwitterException, AccumuloException, AccumuloSecurityException, TableExistsException, TableNotFoundException, JSONException {
+	 */
+	public static void main(String[] args) throws AccumuloException, AccumuloSecurityException {
 
-		JaccsonConnection conn = new JaccsonConnection("new-host.home:2181", "test", "root", "secret", null);
+		Jaccson conn = new Jaccson("localhost:2181", "test", "root", "secret", null);
 
-		JaccsonTable table = conn.getTable("tweets");
-		
+		DB db = conn.getDB("test");
+		DBCollection coll = db.getCollection("tweets");
+
 		ConfigurationBuilder cb = new ConfigurationBuilder();
-		
+
 		cb.setDebugEnabled(true)
-		  .setUser("aaroncordova")
-		  .setPassword("KungF00");
-		
-		
+		.setUser(args[0])
+		.setPassword(args[1]);
+
+
 		TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
 
-		twitterStream.addListener(new TWriter(table));
+		twitterStream.addListener(new TWriter(coll));
 		twitterStream.sample();
-		
-		//for(JSONObject o : table.find("{word: 'love'}", null)) {
-		//	System.out.println(o);
-		//}
+
+		for(DBObject o : coll.find("{\"word\": \"love\"}", null)) {
+			System.out.println(o);
+		}
 	}
 }
 
-*/
