@@ -2,13 +2,7 @@
 import sys
 sys.path.append('gen-py')
 
-from jaccson import TableCursorService
-from jaccson.ttypes import *
 
-from thrift import Thrift, TApplicationException
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
 
 from connection import Connection
 
